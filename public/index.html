@@ -41,6 +41,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   transition:all .2s;letter-spacing:.02em}
 .lock-btn:hover{background:#0047b3;box-shadow:0 4px 12px rgba(0,82,204,.3)}
 .lock-error{font-size:12px;color:var(--red);margin-top:8px;min-height:18px}
+.lock-loading{display:flex;align-items:center;gap:8px;margin-top:12px;
+  font-size:12px;color:var(--text-muted);justify-content:center}
+.google-login-btn{width:100%;margin-top:4px;background:#fff;color:#3c4043;
+  border:1px solid #dadce0;border-radius:10px;padding:12px 16px;
+  font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.google-login-btn:hover{background:#f8f9fa;box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#c6c6c6}
+.google-login-btn:active{background:#f1f3f4}
+.user-chip{display:flex;align-items:center;gap:6px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:20px;padding:3px 4px 3px 8px}
+.user-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover}
+.user-name{font-size:12px;color:var(--text-dim);max-width:100px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ════════════════════════════════════════
    TOP BAR
@@ -386,15 +400,23 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
 <!-- 🔒 LOCK SCREEN -->
 <div id="lockScreen" class="show">
   <div class="lock-box">
-    <div class="lock-icon">🔐</div>
+    <div class="lock-icon">🇦🇪</div>
     <div class="lock-title">UAE BRIEFING</div>
-    <div class="lock-sub">비밀번호를 입력하세요</div>
-    <input type="password" class="lock-input" id="lockInput"
-      placeholder="••••••••"
-      onkeydown="if(event.key==='Enter')checkPassword()"
-      autocomplete="current-password">
-    <button class="lock-btn" onclick="checkPassword()">입장</button>
+    <div class="lock-sub">구글 계정으로 로그인하세요</div>
+    <button class="google-login-btn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Google로 로그인
+    </button>
     <div class="lock-error" id="lockError"></div>
+    <div class="lock-loading" id="lockLoading" style="display:none">
+      <div class="loading-spinner" style="width:20px;height:20px;border-width:2px"></div>
+      <span>로그인 중...</span>
+    </div>
   </div>
 </div>
 
@@ -409,7 +431,11 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <span class="last-updated" id="lastUpdated">—</span>
     <button class="topbar-btn" onclick="toggleKbdHint()" title="단축키 보기">⌨</button>
     <button class="topbar-btn" onclick="loadNews()">↻ 새로고침</button>
-    <button class="topbar-btn" onclick="logout()" title="잠금">🔒</button>
+    <div class="user-chip" id="userChip">
+      <img class="user-avatar" id="userAvatar" src="" alt="">
+      <span class="user-name" id="userName"></span>
+      <button class="topbar-btn" onclick="signOut()" title="로그아웃" style="margin:0;padding:4px 8px">↩</button>
+    </div>
   </div>
 </div>
 
@@ -551,42 +577,127 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
   <kbd>?</kbd> 단축키 닫기
 </div>
 
-<script>
+<script type="module">
 // ════════════════════════════════════════
-// 🔒 PASSWORD
-// 환경변수 SITE_PASSWORD 를 Vercel에 설정하면 서버에서 검증
-// 없으면 브라우저 로컬 비밀번호 사용 (기본값: uae2024)
+// 🔥 FIREBASE CONFIG
 // ════════════════════════════════════════
-const LOCAL_PW = 'uae2024'; // ← 여기 바꾸면 됩니다
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-function checkPassword() {
-  const val = document.getElementById('lockInput').value;
-  const err = document.getElementById('lockError');
-  if (val === LOCAL_PW) {
-    sessionStorage.setItem('uae_auth','1');
-    document.getElementById('lockScreen').classList.remove('show');
-    document.getElementById('appTopbar').style.display='';
-    document.getElementById('appLayout').style.display='';
+const firebaseConfig = {
+  apiKey: "AIzaSyAsunIijhP6Y49q9iuZ8P2vAR_A4llRENg",
+  authDomain: "uae-briefing.firebaseapp.com",
+  projectId: "uae-briefing",
+  storageBucket: "uae-briefing.firebasestorage.app",
+  messagingSenderId: "675050556668",
+  appId: "1:675050556668:web:1bc5e9c38f4675c2af1b79"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// 허용된 이메일 목록 (여기에 요환님 + 와이프 구글 이메일 추가)
+const ALLOWED_EMAILS = [
+  'yoyohwan@gmail.com',
+  'elise@leeumtax.com',
+];
+
+let currentUser = null;
+
+// ── 로그인 상태 감지 ──
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // 허용 목록 체크 (비어있으면 누구나 접속 가능)
+    if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.includes(user.email)) {
+      showLockError('접근 권한이 없습니다: ' + user.email);
+      await fbSignOut(auth);
+      return;
+    }
+    currentUser = user;
+    // UI 업데이트
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    document.getElementById('userName').textContent = user.displayName?.split(' ')[0] || user.email;
+    showApp();
+    await loadUserData();
     loadNews();
   } else {
-    err.textContent = '비밀번호가 틀렸습니다';
-    document.getElementById('lockInput').value='';
-    document.getElementById('lockInput').focus();
-    setTimeout(()=>err.textContent='',2000);
+    currentUser = null;
+    showLock();
+  }
+});
+
+function showApp() {
+  document.getElementById('lockScreen').classList.remove('show');
+  document.getElementById('appTopbar').style.display = '';
+  document.getElementById('appLayout').style.display = '';
+}
+function showLock() {
+  document.getElementById('lockScreen').classList.add('show');
+  document.getElementById('appTopbar').style.display = 'none';
+  document.getElementById('appLayout').style.display = 'none';
+  document.getElementById('lockLoading').style.display = 'none';
+}
+function showLockError(msg) {
+  document.getElementById('lockError').textContent = msg;
+  setTimeout(() => document.getElementById('lockError').textContent = '', 3000);
+}
+
+async function signInWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  document.getElementById('lockLoading').style.display = 'flex';
+  document.querySelector('.google-login-btn').style.display = 'none';
+  try {
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    showLockError('로그인 실패. 다시 시도해주세요.');
+    document.getElementById('lockLoading').style.display = 'none';
+    document.querySelector('.google-login-btn').style.display = 'flex';
   }
 }
-function logout() {
-  sessionStorage.removeItem('uae_auth');
-  document.getElementById('lockScreen').classList.add('show');
-  document.getElementById('appTopbar').style.display='none';
-  document.getElementById('appLayout').style.display='none';
-  document.getElementById('lockInput').value='';
+
+async function signOut() {
+  await fbSignOut(auth);
 }
-// 세션 유지
-if (sessionStorage.getItem('uae_auth')==='1') {
-  document.getElementById('lockScreen').classList.remove('show');
-  document.getElementById('appTopbar').style.display='';
-  document.getElementById('appLayout').style.display='';
+
+// ── Firestore: 유저 데이터 로드/저장 ──
+async function loadUserData() {
+  if (!currentUser) return;
+  try {
+    const ref = doc(db, 'users', currentUser.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.likes)   state.likes   = d.likes;
+      if (d.tags)    state.tags    = d.tags;
+      if (d.allTags) state.allTags = d.allTags;
+      if (d.read)    state.read    = d.read;
+      if (d.keywords) state.keywords = d.keywords;
+      if (d.filters)  state.filters  = d.filters;
+    }
+  } catch(e) { console.warn('loadUserData:', e); }
+}
+
+async function saveToCloud() {
+  if (!currentUser) { savePersist(); return; }
+  try {
+    const ref = doc(db, 'users', currentUser.uid);
+    await setDoc(ref, {
+      likes:    state.likes,
+      tags:     state.tags,
+      allTags:  state.allTags,
+      read:     state.read,
+      keywords: state.keywords,
+      filters:  state.filters,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch(e) {
+    console.warn('saveToCloud:', e);
+    savePersist(); // fallback
+  }
 }
 
 // ════════════════════════════════════════
@@ -681,8 +792,8 @@ const DEMO = {
 // STATE
 // ════════════════════════════════════════
 let state = {
-  keywords:['두바이','아부다비','UAE'],
-  filters:['축구','스포츠','골프'],
+  keywords: JSON.parse(localStorage.getItem('uae_keywords')||'["두바이","아부다비","UAE"]'),
+  filters:  JSON.parse(localStorage.getItem('uae_filters')||'["축구","스포츠","골프"]'),
   viewFilter:'all',       // all/unread/read/exclusive/original/important/liked
   activeKeyword:null,
   sort:'latest',          // latest/importance
@@ -705,6 +816,7 @@ function savePersist() {
   localStorage.setItem('uae_tags', JSON.stringify(state.tags));
   localStorage.setItem('uae_allTags',JSON.stringify(state.allTags));
   localStorage.setItem('uae_read', JSON.stringify(state.read));
+  saveToCloud(); // 클라우드 동기화
 }
 
 // ════════════════════════════════════════
@@ -781,8 +893,25 @@ function renderKeywords() {
   if(state.data) state.data.groups.forEach(g=>{const k=g.lead.keyword;counts[k]=(counts[k]||0)+1;});
   document.getElementById('keywordList').innerHTML=state.keywords.map(kw=>`
     <div class="keyword-item ${state.activeKeyword===kw?'active':''}" onclick="toggleKeyword('${kw}')">
-      <span>${kw}</span><span class="keyword-count">${counts[kw]||0}</span>
+      <span>${kw}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <span class="keyword-count">${counts[kw]||0}</span>
+        <span class="filter-remove" onclick="removeKeyword(event,'${kw}')" title="키워드 제거">×</span>
+      </div>
     </div>`).join('');
+}
+function removeKeyword(e, kw) {
+  e.stopPropagation();
+  if(state.keywords.length <= 1) { alert('키워드는 최소 1개 필요합니다'); return; }
+  state.keywords = state.keywords.filter(k => k !== kw);
+  if(state.activeKeyword === kw) state.activeKeyword = null;
+  saveKeywords();
+  loadNews();
+}
+function saveKeywords() {
+  localStorage.setItem('uae_keywords', JSON.stringify(state.keywords));
+  localStorage.setItem('uae_filters', JSON.stringify(state.filters));
+  saveToCloud();
 }
 function renderFilters() {
   document.getElementById('filterList').innerHTML=state.filters.map(f=>`
@@ -951,13 +1080,13 @@ function setSort(el, sort) {
 function toggleKeyword(kw) { state.activeKeyword=state.activeKeyword===kw?null:kw; render(); }
 function addKeyword() {
   const i=document.getElementById('newKeyword'),v=i.value.trim();
-  if(v&&!state.keywords.includes(v)){state.keywords.push(v);i.value='';loadNews();}
+  if(v&&!state.keywords.includes(v)){state.keywords.push(v);i.value='';saveKeywords();loadNews();}
 }
 function addFilter() {
   const i=document.getElementById('newFilter'),v=i.value.trim();
-  if(v&&!state.filters.includes(v)){state.filters.push(v);i.value='';if(state.data)render();}
+  if(v&&!state.filters.includes(v)){state.filters.push(v);i.value='';saveKeywords();if(state.data)render();}
 }
-function removeFilter(f){state.filters=state.filters.filter(x=>x!==f);if(state.data)render();}
+function removeFilter(f){state.filters=state.filters.filter(x=>x!==f);saveKeywords();if(state.data)render();}
 
 function markRead(gid,e) {
   state.read[gid]=true; savePersist();
@@ -1166,12 +1295,6 @@ function escAttr(s=''){return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quo
 document.getElementById('tagModal').addEventListener('click',function(e){
   if(e.target===this) closeTagModal();
 });
-document.getElementById('lockInput').addEventListener('keydown',function(e){
-  if(e.key==='Enter') checkPassword();
-});
-
-// 세션 있으면 바로 로드
-if(sessionStorage.getItem('uae_auth')==='1') loadNews();
 </script>
 </body>
 </html>
