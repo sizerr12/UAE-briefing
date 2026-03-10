@@ -170,13 +170,21 @@ module.exports = async function handler(req, res) {
   const result = groups.map((group, i) => {
     const lead = pickLead(group);
     const orig = originality(group, lead);
+    // 링크 처리:
+    // - lead.link = 네이버 인뉴스 URL (n.news.naver.com/... 또는 news.naver.com/...)
+    // - lead.originallink = 언론사 직접 URL
+    const isNaverInNews = (url) => url && (url.includes('n.news.naver.com') || url.includes('news.naver.com/'));
+    const naverLink = isNaverInNews(lead.link) ? lead.link : null;
+
     return {
       id: i,
       lead: {
         title: lead.title.replace(/<[^>]+>/g, ''),
         description: lead.description.replace(/<[^>]+>/g, ''),
         source: lead.originallink ? new URL(lead.originallink).hostname.replace('www.','') : '',
-        link: lead.originallink || lead.link,
+        link: lead.link || '',               // 네이버 인뉴스 (있을 수도 없을 수도)
+        originallink: lead.originallink || '',  // 언론사 직접 링크
+        naverLink: naverLink,
         pubDate: lead.pubDate,
         keyword: lead._keyword,
         originality: orig,
@@ -185,7 +193,9 @@ module.exports = async function handler(req, res) {
       others: group.filter(n => n !== lead).map(n => ({
         title: n.title.replace(/<[^>]+>/g, ''),
         source: n.originallink ? new URL(n.originallink).hostname.replace('www.','') : '',
-        link: n.originallink || n.link,
+        link: n.link || '',
+        originallink: n.originallink || '',
+        naverLink: isNaverInNews(n.link) ? n.link : null,
         pubDate: n.pubDate,
       }))
     };
