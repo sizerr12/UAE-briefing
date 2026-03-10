@@ -336,13 +336,17 @@ function decodeHtml(str) {
 }
 
 // ── 네이버 인뉴스 URL 변환 ────────────────────────────────────────────────
-// 네이버 API가 돌려주는 originallink / link 중 news.naver.com 형태 우선 사용
-// api/news.js 에서 naverLink 필드를 함께 보내줌
+// 우선순위: 1) n.news.naver.com 인뉴스 링크  2) 언론사 아웃링크
+// 절대로 검색URL로 만들지 않음
 function naverNewsUrl(item) {
-  // item.naverLink 는 news.naver.com/... 형태 (api에서 주입)
-  if (item.naverLink) return item.naverLink;
-  // fallback: 네이버 검색으로
-  return `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(item.title||'')}`;
+  if (!item) return '#';
+  // API link 필드가 n.news.naver.com 또는 news.naver.com 이면 인뉴스
+  const link = item.naverLink || item.link || '';
+  if (link.includes('n.news.naver.com') || link.includes('news.naver.com/')) {
+    return link;
+  }
+  // 아니면 언론사 직접 링크
+  return item.originallink || item.link || '#';
 }
 
 // ── 언론사 favicon URL ─────────────────────────────────────────────────────
