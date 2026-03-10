@@ -6,229 +6,394 @@
 <title>UAE 뉴스 브리핑</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0a0c10; --surface:#111418; --surface2:#181c22;
-    --border:#1e2530; --gold:#c8a84b; --gold-dim:#8a7035;
-    --text:#e8eaf0; --text-dim:#7a8394; --text-muted:#3e4757;
-    --red:#e05252; --green:#4caf7d; --blue:#4a9eff; --tag-bg:#1a2030;
-    --heart:#ff6b8a;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+:root{
+  --bg:#f4f5f7;--surface:#ffffff;--surface2:#f0f1f4;
+  --border:#e2e5ea;--gold:#b8860b;--gold-dim:#d4a017;
+  --text:#1a1d23;--text-dim:#5a6070;--text-muted:#9aa0ac;
+  --red:#d63031;--green:#00875a;--blue:#0052cc;--tag-bg:#eef0f5;
+  --heart:#e84393;--orange:#d97706;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-  /* ── TOP BAR ── */
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(10,12,16,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
-  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.08em}
-  .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),#8a6010);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
-  .logo-text{color:var(--gold)} .logo-sub{color:var(--text-dim);font-size:11px}
-  .topbar-right{display:flex;align-items:center;gap:10px}
-  .refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Space Mono',monospace;transition:all .2s}
-  .refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
-  .last-updated{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
-  .badge-live{display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;color:var(--green);background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.2);padding:3px 8px;border-radius:4px}
-  .badge-live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* ════════════════════════════════════════
+   🔒 LOCK SCREEN
+════════════════════════════════════════ */
+#lockScreen{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#f0f4ff 0%,#fafbff 100%);
+  align-items:center;justify-content:center;flex-direction:column;gap:20px;
+}
+#lockScreen.show{display:flex}
+.lock-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:40px 44px;width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.lock-icon{font-size:40px;margin-bottom:10px}
+.lock-title{font-family:'Space Mono',monospace;font-size:15px;color:var(--text);letter-spacing:.06em;margin-bottom:4px;font-weight:700}
+.lock-sub{font-size:12px;color:var(--text-muted);margin-bottom:22px}
+.lock-input{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);
+  border-radius:10px;padding:12px 14px;font-size:15px;text-align:center;
+  letter-spacing:.25em;outline:none;font-family:'Space Mono',monospace;transition:border-color .2s}
+.lock-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,82,204,.1)}
+.lock-btn{width:100%;margin-top:12px;background:var(--blue);color:#fff;border:none;
+  border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .2s;letter-spacing:.02em}
+.lock-btn:hover{background:#0047b3;box-shadow:0 4px 12px rgba(0,82,204,.3)}
+.lock-error{font-size:12px;color:var(--red);margin-top:8px;min-height:18px}
 
-  /* ── LAYOUT ── */
-  .layout{display:flex;margin-top:56px;min-height:calc(100vh - 56px)}
+/* ════════════════════════════════════════
+   TOP BAR
+════════════════════════════════════════ */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.logo{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.08em}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#0052cc,#0078d4);
+  border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.logo-text{color:var(--text);font-weight:700}.logo-sub{color:var(--text-muted);font-size:10px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+  padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;
+  font-family:'Space Mono',monospace;transition:all .2s}
+.topbar-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,82,204,.05)}
+.topbar-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(0,82,204,.08)}
+.badge-live{display:inline-flex;align-items:center;gap:4px;font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--green);background:rgba(0,135,90,.08);
+  border:1px solid rgba(0,135,90,.2);padding:3px 8px;border-radius:4px}
+.badge-live::before{content:'';width:5px;height:5px;border-radius:50%;
+  background:var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.last-updated{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
 
-  /* ── SIDEBAR ── */
-  .sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
-  .sidebar-section{margin-bottom:24px}
-  .sidebar-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;padding:0 4px}
-  .keyword-list{display:flex;flex-direction:column;gap:4px}
-  .keyword-item{display:flex;align-items:center;justify-content:space-between;background:var(--tag-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer;transition:all .15s}
-  .keyword-item:hover{border-color:var(--gold-dim)}
-  .keyword-item.active{border-color:var(--gold);background:rgba(200,168,75,.08)}
-  .keyword-count{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);background:rgba(200,168,75,.12);padding:1px 6px;border-radius:3px}
-  .filter-list{display:flex;flex-direction:column;gap:4px}
-  .filter-item{display:flex;align-items:center;justify-content:space-between;background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);border-radius:6px;padding:6px 10px;font-size:13px}
-  .filter-remove{color:var(--red);cursor:pointer;font-size:16px;line-height:1;opacity:.6;transition:opacity .15s}
-  .filter-remove:hover{opacity:1}
-  .add-row{display:flex;gap:6px;margin-top:8px}
-  .add-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .15s}
-  .add-input:focus{border-color:var(--gold-dim)}
-  .add-btn{background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer;font-weight:700;transition:opacity .15s}
-  .add-btn:hover{opacity:.85}
-  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
-  .stat-num{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--gold)}
-  .stat-label{font-size:11px;color:var(--text-dim);margin-top:2px}
+/* ════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════ */
+.layout{display:flex;margin-top:52px;min-height:calc(100vh - 52px)}
 
-  /* ── TAB BAR (피드 / 보관함) ── */
-  .tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
-  .tab-btn{padding:8px 18px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s;font-family:'Noto Sans KR',sans-serif}
-  .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
-  .tab-btn .tab-count{font-family:'Space Mono',monospace;font-size:10px;background:rgba(200,168,75,.15);color:var(--gold);padding:1px 6px;border-radius:3px;margin-left:6px}
+/* ════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════ */
+.sidebar{width:240px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  padding:16px 12px;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar-section{margin-bottom:20px}
+.sidebar-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;
+  color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;padding:0 4px}
 
-  /* ── MAIN ── */
-  .main{flex:1;padding:20px 24px;max-width:960px}
-  .feed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-  .feed-title{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase}
-  .sort-tabs{display:flex;gap:4px}
-  .sort-tab{font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:'Space Mono',monospace;border:1px solid transparent;color:var(--text-muted);transition:all .15s}
-  .sort-tab.active{border-color:var(--border);background:var(--surface2);color:var(--text)}
-  .filter-notice{background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
+/* 뷰 필터 아이템 */
+.nav-item{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;
+  transition:all .12s;color:var(--text-dim);border:1px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(0,82,204,.07);border-color:rgba(0,82,204,.15);color:var(--blue);font-weight:600}
+.nav-item-left{display:flex;align-items:center;gap:8px}
+.nav-icon{font-size:14px;width:20px;text-align:center}
+.nav-count{font-family:'Space Mono',monospace;font-size:10px;
+  background:var(--tag-bg);color:var(--text-muted);padding:1px 6px;border-radius:3px;min-width:22px;text-align:center}
+.nav-item.active .nav-count{background:rgba(0,82,204,.1);color:var(--blue)}
 
-  /* ── NEWS CARDS ── */
-  .news-list{display:flex;flex-direction:column;gap:10px}
-  .news-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .18s;position:relative;animation:fadeUp .3s ease both;display:block;color:inherit}
-  .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border);transition:background .15s;z-index:1}
-  .news-card:hover{border-color:#2a3040;background:var(--surface2)}
-  .news-card:hover::before{background:var(--gold)}
-  .news-card.highlight{border-color:rgba(200,168,75,.3);background:linear-gradient(135deg,rgba(200,168,75,.04) 0%,var(--surface) 60%)}
-  .news-card.highlight::before{background:var(--gold)}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.nav-divider{height:1px;background:var(--border);margin:8px 4px}
 
-  /* ── 카드 레이아웃 ── */
-  .card-inner{display:flex;min-height:0}
-  .card-body{flex:1;padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:6px}
-  .card-thumb{width:140px;flex-shrink:0;position:relative;overflow:hidden;background:var(--surface2)}
-  .card-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
-  .news-card:hover .card-thumb img{transform:scale(1.04)}
-  .card-thumb-placeholder{width:100%;height:100%;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+/* 키워드/필터 */
+.keyword-list{display:flex;flex-direction:column;gap:3px}
+.keyword-item{display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  padding:6px 10px;font-size:12px;cursor:pointer;transition:all .12s;color:var(--text-dim)}
+.keyword-item:hover{border-color:var(--blue);color:var(--text)}
+.keyword-item.active{border-color:var(--blue);background:rgba(0,82,204,.06);color:var(--blue);font-weight:600}
+.keyword-count{font-family:'Space Mono',monospace;font-size:10px;color:var(--blue);
+  background:rgba(0,82,204,.1);padding:1px 5px;border-radius:3px}
+.filter-list{display:flex;flex-direction:column;gap:3px}
+.filter-item{display:flex;align-items:center;justify-content:space-between;
+  background:rgba(214,48,49,.04);border:1px solid rgba(214,48,49,.15);
+  border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text-dim)}
+.filter-remove{color:var(--red);cursor:pointer;font-size:15px;opacity:.5;transition:opacity .15s}
+.filter-remove:hover{opacity:1}
+.add-row{display:flex;gap:5px;margin-top:6px}
+.add-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:5px 9px;font-size:11px;font-family:'Noto Sans KR',sans-serif;
+  outline:none;transition:border-color .15s}
+.add-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,82,204,.1)}
+.add-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;
+  padding:5px 9px;font-size:12px;cursor:pointer;font-weight:700;transition:opacity .15s}
+.add-btn:hover{opacity:.85}
 
-  /* ── 언론사 로고 ── */
-  .source-row{display:flex;align-items:center;gap:7px}
-  .source-favicon{width:14px;height:14px;border-radius:2px;object-fit:contain;flex-shrink:0;opacity:.85}
-  .source-favicon-fallback{width:14px;height:14px;border-radius:2px;background:var(--gold-dim);display:inline-flex;align-items:center;justify-content:center;font-size:7px;color:var(--bg);font-weight:700;flex-shrink:0;font-family:'Space Mono',monospace}
-  .card-source{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.04em;font-weight:700}
-  .card-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
+/* 통계 */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;box-shadow:var(--shadow)}
+.stat-num{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--text)}
+.stat-label{font-size:10px;color:var(--text-muted);margin-top:1px}
 
-  .card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
-  .card-tag{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--tag-bg);color:var(--text-dim);border:1px solid var(--border)}
-  .card-tag.dubai{color:#4a9eff;border-color:rgba(74,158,255,.25);background:rgba(74,158,255,.07)}
-  .card-tag.abudhabi{color:#a78bfa;border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.07)}
-  .card-tag.uae{color:var(--gold);border-color:rgba(200,168,75,.25);background:rgba(200,168,75,.07)}
-  .card-title{font-size:14px;font-weight:600;line-height:1.5;color:var(--text)}
-  .card-desc{font-size:12px;color:var(--text-dim);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-  .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:8px}
-  .card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);text-decoration:none}
-  .card-actions{display:flex;gap:4px;align-items:center}
-  .card-action-btn{font-size:11px;color:var(--text-muted);cursor:pointer;padding:3px 8px;border-radius:4px;border:1px solid transparent;transition:all .15s;background:none;font-family:'Noto Sans KR',sans-serif}
-  .card-action-btn:hover{border-color:var(--border);color:var(--text)}
-  .card-action-btn.hide:hover{color:var(--red);border-color:rgba(224,82,82,.3)}
+/* ════════════════════════════════════════
+   MAIN
+════════════════════════════════════════ */
+.main{flex:1;padding:20px 24px;max-width:980px}
+.feed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.feed-title{font-size:13px;color:var(--text-dim)}
+.feed-title strong{color:var(--text);font-weight:700}
+.view-controls{display:flex;gap:6px;align-items:center}
+.view-btn{font-size:12px;padding:4px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface);color:var(--text-muted);
+  transition:all .15s;font-family:'Space Mono',monospace;box-shadow:var(--shadow)}
+.view-btn.active{border-color:var(--blue);background:rgba(0,82,204,.07);color:var(--blue)}
+.sort-tab{font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-muted);transition:all .15s;box-shadow:var(--shadow)}
+.sort-tab.active{border-color:var(--blue);background:rgba(0,82,204,.07);color:var(--blue);font-weight:600}
+.select-mode-btn{font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-muted);cursor:pointer;transition:all .15s;
+  font-family:'Space Mono',monospace;box-shadow:var(--shadow)}
+.select-mode-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(0,82,204,.07)}
 
-  /* ── 하트 버튼 ── */
-  .heart-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:3px 6px;border-radius:4px;transition:all .15s;line-height:1;color:var(--text-muted)}
-  .heart-btn:hover{color:var(--heart);transform:scale(1.2)}
-  .heart-btn.liked{color:var(--heart);animation:heartPop .25s ease}
-  @keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+.filter-notice{background:rgba(214,48,49,.05);border:1px solid rgba(214,48,49,.15);
+  border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;
+  color:var(--text-dim);display:flex;align-items:center;gap:8px}
 
-  /* ── 독창성 배지 ── */
-  .orig-badge{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:3px;text-transform:uppercase}
-  .orig-badge.exclusive{background:rgba(245,158,66,.18);color:#f59e42;border:1px solid rgba(245,158,66,.4)}
-  .orig-badge.original{background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.35)}
+/* ════════════════════════════════════════
+   CARD VIEW
+════════════════════════════════════════ */
+.news-list{display:flex;flex-direction:column;gap:10px}
+.news-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:all .15s;position:relative;
+  animation:fadeUp .25s ease both;color:inherit;box-shadow:var(--shadow)}
+.news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--border);transition:background .15s;z-index:1}
+.news-card:hover{border-color:#c8d0e0;box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.news-card:hover::before{background:var(--blue)}
+.news-card.highlight{border-color:rgba(217,119,6,.25);
+  background:linear-gradient(135deg,rgba(217,119,6,.03) 0%,var(--surface) 60%)}
+.news-card.highlight::before{background:var(--orange)}
+.news-card.read{opacity:.45;filter:saturate(.2)}
+.news-card.read:hover{opacity:.7;filter:saturate(.5)}
+.news-card.read .card-title{color:var(--text-dim)}
+.news-card.selected{border-color:rgba(0,82,204,.35);background:rgba(0,82,204,.03)}
+.news-card.selected::before{background:var(--blue)}
+.news-card.focused{outline:2px solid var(--blue);outline-offset:1px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-  /* ── 그룹 카드 ── */
-  .group-card{padding-bottom:0}
-  .group-lead-link{display:block;text-decoration:none;color:inherit}
-  .dupe-toggle{background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);font-family:'Noto Sans KR',sans-serif;padding:0;text-align:left;transition:color .15s;line-height:1.5}
-  .dupe-toggle:hover{color:var(--text-dim)}
-  .group-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px}
-  .dupe-list{border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
-  .dupe-item{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(30,37,48,.6);text-decoration:none;color:inherit;transition:background .1s}
-  .dupe-item:last-child{border-bottom:none}
-  .dupe-item:hover{background:rgba(255,255,255,.02)}
-  .dupe-src-wrap{display:flex;align-items:center;gap:5px;min-width:90px}
-  .dupe-favicon{width:12px;height:12px;border-radius:2px;object-fit:contain;opacity:.7}
-  .dupe-source{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap}
-  .dupe-title{font-size:12px;color:var(--text-dim);flex:1;line-height:1.4;transition:color .15s}
-  .dupe-item:hover .dupe-title{color:var(--text)}
-  .dupe-time{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap}
+/* 카드 내부 */
+.card-inner{display:flex;min-height:0}
+.card-body{flex:1;padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:5px}
+.card-thumb{width:130px;flex-shrink:0;overflow:hidden;background:var(--surface2)}
+.card-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.news-card:hover .card-thumb img{transform:scale(1.04)}
 
-  /* ── 태그 모달 ── */
-  .modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center}
-  .modal-overlay.open{display:flex}
-  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-  .modal-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px}
-  .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:32px}
-  .modal-tag{font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--tag-bg);color:var(--text-dim);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
-  .modal-tag:hover{border-color:var(--gold-dim);color:var(--text)}
-  .modal-tag.selected{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
-  .modal-tag .tag-remove{font-size:14px;color:var(--red);opacity:.6;cursor:pointer}
-  .modal-tag .tag-remove:hover{opacity:1}
-  .modal-add-row{display:flex;gap:8px;margin-bottom:16px}
-  .modal-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none}
-  .modal-input:focus{border-color:var(--gold-dim)}
-  .modal-save-btn{background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:700}
-  .modal-close-btn{width:100%;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;cursor:pointer}
+/* ─ 중요도 별점 ─ */
+.importance-stars{display:flex;gap:1px;align-items:center}
+.star{font-size:10px;line-height:1}
+.star.on{color:var(--orange)}
+.star.off{color:var(--border);opacity:.8}
 
-  /* ── 보관함 ── */
-  .bookmarks-empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px}
-  .bookmark-tag-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-  .btag-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--tag-bg);color:var(--text-dim);cursor:pointer;transition:all .15s}
-  .btag-btn.active{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
-  .bookmark-tags-on-card{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
-  .btag-chip{font-size:10px;padding:1px 7px;border-radius:10px;background:rgba(200,168,75,.12);color:var(--gold);border:1px solid rgba(200,168,75,.2)}
+/* ─ 읽음 dot ─ */
+.read-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);
+  flex-shrink:0;transition:all .2s}
+.news-card.read .read-dot{background:var(--border)}
 
-  /* ── 로딩 / 빈 화면 ── */
-  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px}
-  .loading-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .loading-text{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)}
-  .empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px}
+/* ─ 소스 ─ */
+.source-row{display:flex;align-items:center;gap:6px}
+.source-favicon{width:13px;height:13px;border-radius:2px;object-fit:contain;opacity:.85}
+.card-source{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim);font-weight:700}
+.card-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
 
-  /* ── 읽음 / 안읽음 ── */
-  .news-card.read{opacity:.45;filter:saturate(.3)}
-  .news-card.read .card-title{color:var(--text-dim)}
-  .news-card.read:hover{opacity:.75;filter:saturate(.6)}
-  .read-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;box-shadow:0 0 5px var(--blue);transition:all .2s}
-  .news-card.read .read-dot{background:var(--text-muted);box-shadow:none}
+.card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-tags{display:flex;gap:3px;margin-left:auto}
+.card-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:var(--surface2);
+  color:var(--text-muted);border:1px solid var(--border);font-weight:500}
+.card-tag.dubai{color:#0052cc;border-color:rgba(0,82,204,.2);background:rgba(0,82,204,.06)}
+.card-tag.abudhabi{color:#6e40c9;border-color:rgba(110,64,201,.2);background:rgba(110,64,201,.06)}
+.card-tag.uae{color:var(--orange);border-color:rgba(217,119,6,.2);background:rgba(217,119,6,.06)}
+.card-title{font-size:14px;font-weight:700;line-height:1.55;color:var(--text)}
+.card-desc{font-size:12px;color:var(--text-dim);line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-footer{display:flex;align-items:center;justify-content:space-between;
+  margin-top:auto;padding-top:8px}
+.card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
+.card-link:hover{color:var(--blue)}
+.card-actions{display:flex;gap:3px;align-items:center}
+.card-action-btn{font-size:11px;color:var(--text-muted);cursor:pointer;padding:3px 8px;
+  border-radius:5px;border:1px solid transparent;transition:all .15s;background:none;
+  font-family:'Noto Sans KR',sans-serif}
+.card-action-btn:hover{border-color:var(--border);background:var(--surface2);color:var(--text)}
+.card-action-btn.danger:hover{color:var(--red);border-color:rgba(214,48,49,.2);background:rgba(214,48,49,.05)}
+.heart-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;
+  border-radius:4px;transition:all .15s;color:var(--text-muted)}
+.heart-btn:hover{color:var(--heart);transform:scale(1.2)}
+.heart-btn.liked{color:var(--heart)}
 
-  /* ── 체크박스 선택 ── */
-  .news-card{position:relative}
-  .card-checkbox{position:absolute;top:12px;left:12px;z-index:10;
-    width:18px;height:18px;border-radius:4px;border:2px solid var(--border);
-    background:var(--surface2);cursor:pointer;display:none;
-    transition:all .15s;appearance:none;-webkit-appearance:none}
-  .card-checkbox:checked{background:var(--blue);border-color:var(--blue);
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-size:10px;background-repeat:no-repeat;background-position:center}
-  .select-mode .card-checkbox{display:block}
-  .select-mode .news-card{padding-left:4px}
-  .select-mode .news-card.selected{border-color:rgba(74,158,255,.5);background:rgba(74,158,255,.05)}
-  .select-mode .news-card.selected::before{background:var(--blue)}
+/* ─ 배지 ─ */
+.orig-badge{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;
+  letter-spacing:.06em;padding:2px 7px;border-radius:4px}
+.orig-badge.exclusive{background:rgba(214,48,49,.08);color:#c0392b;border:1px solid rgba(214,48,49,.25)}
+.orig-badge.original{background:rgba(0,135,90,.08);color:var(--green);border:1px solid rgba(0,135,90,.25)}
 
-  /* ── 선택 툴바 ── */
-  .select-toolbar{
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-    background:var(--surface);border:1px solid var(--border);
-    border-radius:12px;padding:10px 16px;
-    display:none;align-items:center;gap:10px;z-index:150;
-    box-shadow:0 8px 32px rgba(0,0,0,.5);backdrop-filter:blur(8px);
-    animation:slideUp .2s ease;white-space:nowrap
-  }
-  .select-toolbar.visible{display:flex}
-  @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-  .sel-count{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);
-    background:rgba(200,168,75,.12);padding:3px 10px;border-radius:20px}
-  .sel-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border);
-    background:var(--surface2);color:var(--text-dim);cursor:pointer;transition:all .15s;
-    font-family:'Noto Sans KR',sans-serif}
-  .sel-btn:hover{color:var(--text);border-color:#3a4557}
-  .sel-btn.danger:hover{color:var(--red);border-color:rgba(224,82,82,.4)}
-  .sel-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
-  .sel-btn.primary:hover{opacity:.85}
-  .sel-divider{width:1px;height:20px;background:var(--border)}
+/* ─ 체크박스 ─ */
+.card-checkbox{position:absolute;top:12px;left:11px;z-index:10;width:17px;height:17px;
+  border-radius:4px;border:1.5px solid var(--border);background:var(--surface);
+  cursor:pointer;display:none;appearance:none;-webkit-appearance:none;transition:all .15s}
+.card-checkbox:checked{background:var(--blue);border-color:var(--blue);
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size:10px;background-repeat:no-repeat;background-position:center}
+.select-mode .card-checkbox{display:block}
 
-  /* ── 선택모드 토글 버튼 ── */
-  .select-mode-btn{font-size:11px;padding:4px 12px;border-radius:6px;
-    border:1px solid var(--border);background:var(--surface2);
-    color:var(--text-muted);cursor:pointer;transition:all .15s;
-    font-family:'Space Mono',monospace}
-  .select-mode-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.08)}
+/* ─ 그룹 ─ */
+.group-card{padding-bottom:0}
+.group-lead-link{display:block;text-decoration:none;color:inherit}
+.dupe-toggle{background:none;border:none;cursor:pointer;font-size:11px;
+  color:var(--text-muted);font-family:'Noto Sans KR',sans-serif;padding:0;line-height:1.5;transition:color .15s}
+.dupe-toggle:hover{color:var(--blue)}
+.group-footer{display:flex;align-items:center;justify-content:space-between;padding:7px 16px 10px}
+.dupe-list{border-top:1px solid var(--border);background:var(--bg)}
+.dupe-item{display:flex;align-items:center;gap:8px;padding:7px 16px;
+  border-bottom:1px solid var(--border);text-decoration:none;color:inherit;transition:background .1s}
+.dupe-item:last-child{border-bottom:none}
+.dupe-item:hover{background:var(--surface2)}
+.dupe-src-wrap{display:flex;align-items:center;gap:4px;min-width:80px}
+.dupe-favicon{width:11px;height:11px;border-radius:2px;opacity:.7}
+.dupe-source{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted)}
+.dupe-title{font-size:12px;color:var(--text-dim);flex:1;line-height:1.4;transition:color .1s}
+.dupe-item:hover .dupe-title{color:var(--text)}
+.dupe-time{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap}
 
-  ::-webkit-scrollbar{width:4px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* bookmark chips */
+.bookmark-tags-on-card{display:flex;gap:3px;flex-wrap:wrap}
+.btag-chip{font-size:9px;padding:2px 7px;border-radius:10px;
+  background:rgba(0,82,204,.07);color:var(--blue);border:1px solid rgba(0,82,204,.15)}
+
+/* ════════════════════════════════════════
+   COMPACT LIST VIEW
+════════════════════════════════════════ */
+.news-list.compact-view{gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.news-list.compact-view .news-card{border:none;border-bottom:1px solid var(--border);
+  border-radius:0;animation:none;box-shadow:none;transform:none}
+.news-list.compact-view .news-card:last-child{border-bottom:none}
+.news-list.compact-view .news-card::before{border-radius:0}
+.news-list.compact-view .card-thumb{display:none}
+.news-list.compact-view .card-body{padding:8px 16px;flex-direction:row;align-items:center;gap:10px}
+.news-list.compact-view .card-desc{display:none}
+.news-list.compact-view .card-title{font-size:13px;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.news-list.compact-view .card-footer{padding-top:0;margin-top:0;flex-shrink:0}
+.news-list.compact-view .card-meta{flex-shrink:0;flex-wrap:nowrap}
+.news-list.compact-view .card-tags{display:none}
+.news-list.compact-view .bookmark-tags-on-card{display:none}
+.news-list.compact-view .group-footer{padding:4px 16px 6px}
+.news-list.compact-view .dupe-list .dupe-item{padding:5px 16px}
+
+/* ════════════════════════════════════════
+   TAB BAR
+════════════════════════════════════════ */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:12px}
+.tab-btn{padding:7px 16px;font-size:13px;cursor:pointer;border:none;background:none;
+  color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s;
+  font-family:'Noto Sans KR',sans-serif}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab-count{font-family:'Space Mono',monospace;font-size:10px;background:rgba(0,82,204,.1);
+  color:var(--blue);padding:1px 5px;border-radius:3px;margin-left:5px}
+
+/* ════════════════════════════════════════
+   TAG MODAL
+════════════════════════════════════════ */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.35);backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:20px 22px;width:310px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px}
+.modal-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;min-height:28px}
+.modal-tag{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-dim);cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:4px}
+.modal-tag:hover{border-color:var(--blue);color:var(--text)}
+.modal-tag.selected{background:rgba(0,82,204,.08);border-color:var(--blue);color:var(--blue);font-weight:600}
+.modal-tag .tag-remove{font-size:13px;color:var(--red);opacity:.5;cursor:pointer}
+.modal-tag .tag-remove:hover{opacity:1}
+.modal-add-row{display:flex;gap:7px;margin-bottom:14px}
+.modal-input{flex:1;background:var(--bg);border:1.5px solid var(--border);color:var(--text);
+  border-radius:7px;padding:7px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;
+  transition:border-color .15s}
+.modal-input:focus{border-color:var(--blue)}
+.modal-save-btn{background:var(--blue);color:#fff;border:none;border-radius:7px;
+  padding:7px 13px;font-size:12px;cursor:pointer;font-weight:700}
+.modal-close-btn{width:100%;background:var(--surface2);color:var(--text-dim);
+  border:1px solid var(--border);border-radius:7px;padding:8px;font-size:12px;cursor:pointer;
+  transition:all .15s}
+.modal-close-btn:hover{background:var(--border);color:var(--text)}
+
+/* ════════════════════════════════════════
+   SELECT TOOLBAR
+════════════════════════════════════════ */
+.select-toolbar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:10px 16px;display:none;align-items:center;gap:8px;z-index:150;
+  box-shadow:0 8px 32px rgba(0,0,0,.15);white-space:nowrap;animation:slideUp .2s ease}
+.select-toolbar.visible{display:flex}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.sel-count{font-family:'Space Mono',monospace;font-size:11px;color:var(--blue);
+  background:rgba(0,82,204,.1);padding:3px 10px;border-radius:20px;font-weight:700}
+.sel-divider{width:1px;height:18px;background:var(--border)}
+.sel-btn{font-size:12px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-dim);cursor:pointer;transition:all .15s;
+  font-family:'Noto Sans KR',sans-serif}
+.sel-btn:hover{color:var(--text);border-color:#c8d0e0;background:var(--bg)}
+.sel-btn.danger:hover{color:var(--red);border-color:rgba(214,48,49,.3);background:rgba(214,48,49,.05)}
+.sel-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sel-btn.primary:hover{background:#0047b3;opacity:1}
+
+/* ════════════════════════════════════════
+   KEYBOARD HINT
+════════════════════════════════════════ */
+.kbd-hint{position:fixed;bottom:20px;right:20px;font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--text-dim);background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:10px 14px;line-height:2;
+  opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-md)}
+.kbd-hint.show{opacity:1}
+kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
+  padding:1px 6px;font-size:10px;color:var(--text)}
+
+/* ════════════════════════════════════════
+   BOOKMARKS
+════════════════════════════════════════ */
+.bookmark-tag-filter{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.btag-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-muted);cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+.btag-btn.active{background:rgba(0,82,204,.07);border-color:var(--blue);color:var(--blue);font-weight:600}
+.bookmarks-empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px}
+
+/* ════════════════════════════════════════
+   LOADING / EMPTY
+════════════════════════════════════════ */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px}
+.loading-spinner{width:28px;height:28px;border:2.5px solid var(--border);
+  border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
+.empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
 </style>
 </head>
 <body>
 
+<!-- 🔒 LOCK SCREEN -->
+<div id="lockScreen" class="show">
+  <div class="lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">UAE BRIEFING</div>
+    <div class="lock-sub">비밀번호를 입력하세요</div>
+    <input type="password" class="lock-input" id="lockInput"
+      placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')checkPassword()"
+      autocomplete="current-password">
+    <button class="lock-btn" onclick="checkPassword()">입장</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
 <!-- TOP BAR -->
-<div class="topbar">
+<div class="topbar" id="appTopbar" style="display:none">
   <div class="logo">
     <div class="logo-icon">🇦🇪</div>
     <div><div class="logo-text">UAE BRIEFING</div><div class="logo-sub">두바이 · 아부다비 · UAE</div></div>
@@ -236,59 +401,103 @@
   <div class="topbar-right">
     <span class="badge-live">LIVE</span>
     <span class="last-updated" id="lastUpdated">—</span>
-    <button class="refresh-btn" onclick="loadNews()">↻ 새로고침</button>
+    <button class="topbar-btn" onclick="toggleKbdHint()" title="단축키 보기">⌨</button>
+    <button class="topbar-btn" onclick="loadNews()">↻ 새로고침</button>
+    <button class="topbar-btn" onclick="logout()" title="잠금">🔒</button>
   </div>
 </div>
 
 <!-- LAYOUT -->
-<div class="layout">
+<div class="layout" id="appLayout" style="display:none">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
+
+    <!-- 뷰 필터 (inoreader 스타일) -->
     <div class="sidebar-section">
-      <div class="sidebar-label">📡 검색 키워드</div>
+      <div class="sidebar-label">📋 뷰</div>
+      <div class="keyword-list" id="viewFilters">
+        <div class="nav-item active" onclick="setViewFilter(this,'all')">
+          <div class="nav-item-left"><span class="nav-icon">📰</span>전체</div>
+          <span class="nav-count" id="cnt-all">0</span>
+        </div>
+        <div class="nav-item" onclick="setViewFilter(this,'unread')">
+          <div class="nav-item-left"><span class="nav-icon">🔵</span>안읽음</div>
+          <span class="nav-count" id="cnt-unread">0</span>
+        </div>
+        <div class="nav-item" onclick="setViewFilter(this,'read')">
+          <div class="nav-item-left"><span class="nav-icon">✓</span>읽음</div>
+          <span class="nav-count" id="cnt-read">0</span>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-item" onclick="setViewFilter(this,'exclusive')">
+          <div class="nav-item-left"><span class="nav-icon">🔥</span>단독</div>
+          <span class="nav-count" id="cnt-exclusive">0</span>
+        </div>
+        <div class="nav-item" onclick="setViewFilter(this,'original')">
+          <div class="nav-item-left"><span class="nav-icon">📝</span>심층</div>
+          <span class="nav-count" id="cnt-original">0</span>
+        </div>
+        <div class="nav-item" onclick="setViewFilter(this,'important')">
+          <div class="nav-item-left"><span class="nav-icon">⭐</span>중요 (★★★)</div>
+          <span class="nav-count" id="cnt-important">0</span>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-item" onclick="setViewFilter(this,'liked')">
+          <div class="nav-item-left"><span class="nav-icon">♥</span>보관함</div>
+          <span class="nav-count" id="cnt-liked">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 키워드 필터 -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">📡 키워드</div>
       <div class="keyword-list" id="keywordList"></div>
       <div class="add-row">
         <input class="add-input" id="newKeyword" placeholder="키워드 추가..." onkeydown="if(event.key==='Enter')addKeyword()">
         <button class="add-btn" onclick="addKeyword()">+</button>
       </div>
     </div>
+
+    <!-- 제외 키워드 -->
     <div class="sidebar-section">
-      <div class="sidebar-label">🚫 제외 키워드</div>
+      <div class="sidebar-label">🚫 제외</div>
       <div class="filter-list" id="filterList"></div>
       <div class="add-row">
         <input class="add-input" id="newFilter" placeholder="제외할 단어..." onkeydown="if(event.key==='Enter')addFilter()">
         <button class="add-btn" style="background:var(--red)" onclick="addFilter()">+</button>
       </div>
     </div>
+
+    <!-- 통계 -->
     <div class="sidebar-section">
       <div class="sidebar-label">📊 현황</div>
       <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">전체 기사</div></div>
+        <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">전체</div></div>
         <div class="stat-card"><div class="stat-num" style="color:var(--red)">—</div><div class="stat-label">필터됨</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:#f59e42">—</div><div class="stat-label">단독</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--orange)">—</div><div class="stat-label">단독</div></div>
         <div class="stat-card"><div class="stat-num" style="color:var(--green)">—</div><div class="stat-label">심층</div></div>
       </div>
+
     </div>
-  </div>
+  </div><!-- /sidebar -->
 
   <!-- MAIN -->
   <div class="main">
     <div class="feed-header">
-      <div></div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div class="feed-title" id="feedTitle">전체 <strong id="feedCount">0</strong>건</div>
+      <div class="view-controls">
         <button class="select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ 선택</button>
-        <div class="sort-tabs">
-          <div class="sort-tab active" onclick="setSort(this,'latest')">최신순</div>
-          <div class="sort-tab" onclick="setSort(this,'group')">묶음순</div>
+        <div style="display:flex;gap:3px">
+          <button class="view-btn active" id="viewCard" onclick="setView('card',this)" title="카드뷰">▦</button>
+          <button class="view-btn" id="viewCompact" onclick="setView('compact',this)" title="컴팩트뷰">☰</button>
+        </div>
+        <div style="display:flex;gap:3px">
+          <div class="sort-tab active" onclick="setSort(this,'latest')">최신</div>
+          <div class="sort-tab" onclick="setSort(this,'importance')">중요도</div>
         </div>
       </div>
-    </div>
-
-    <!-- 탭 바 -->
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab(this,'feed')">📰 뉴스 피드</button>
-      <button class="tab-btn" onclick="switchTab(this,'bookmarks')">♥ 보관함 <span class="tab-count" id="bookmarkCount">0</span></button>
     </div>
 
     <div id="filterNotice" class="filter-notice" style="display:none"></div>
@@ -296,24 +505,24 @@
       <div class="loading"><div class="loading-spinner"></div><div class="loading-text">뉴스 불러오는 중...</div></div>
     </div>
   </div>
-</div>
+</div><!-- /layout -->
 
-<!-- 태그 모달 -->
+<!-- TAG MODAL -->
 <div class="modal-overlay" id="tagModal">
   <div class="modal">
     <div class="modal-title">🏷 태그 달기</div>
     <div class="modal-tags" id="modalTagList"></div>
     <div class="modal-add-row">
-      <input class="modal-input" id="modalTagInput" placeholder="새 태그 입력..." onkeydown="if(event.key==='Enter')addModalTag()">
+      <input class="modal-input" id="modalTagInput" placeholder="새 태그..." onkeydown="if(event.key==='Enter')addModalTag()">
       <button class="modal-save-btn" onclick="addModalTag()">추가</button>
     </div>
     <button class="modal-close-btn" onclick="closeTagModal()">완료</button>
   </div>
 </div>
 
-<!-- 선택 툴바 -->
+<!-- SELECT TOOLBAR -->
 <div class="select-toolbar" id="selectToolbar">
-  <span class="sel-count" id="selCount">0개 선택</span>
+  <span class="sel-count" id="selCount">0개</span>
   <div class="sel-divider"></div>
   <button class="sel-btn primary" onclick="bulkMarkRead()">✓ 읽음</button>
   <button class="sel-btn" onclick="bulkMarkUnread()">○ 안읽음</button>
@@ -321,277 +530,343 @@
   <button class="sel-btn" onclick="bulkOpenTagModal()">🏷 태그</button>
   <div class="sel-divider"></div>
   <button class="sel-btn danger" onclick="bulkHide()">숨기기</button>
-  <button class="sel-btn" onclick="clearSelection()">✕ 취소</button>
+  <button class="sel-btn" onclick="clearSelection()">✕</button>
+</div>
+
+<!-- KEYBOARD HINT -->
+<div class="kbd-hint" id="kbdHint">
+  <kbd>j</kbd> / <kbd>k</kbd> 위아래 이동<br>
+  <kbd>o</kbd> 기사 열기<br>
+  <kbd>m</kbd> 읽음 처리<br>
+  <kbd>s</kbd> 보관함 토글<br>
+  <kbd>x</kbd> 선택 토글<br>
+  <kbd>r</kbd> 새로고침<br>
+  <kbd>?</kbd> 단축키 닫기
 </div>
 
 <script>
-// ── HTML 엔티티 디코딩 ────────────────────────────────────────────────────
+// ════════════════════════════════════════
+// 🔒 PASSWORD
+// 환경변수 SITE_PASSWORD 를 Vercel에 설정하면 서버에서 검증
+// 없으면 브라우저 로컬 비밀번호 사용 (기본값: uae2024)
+// ════════════════════════════════════════
+const LOCAL_PW = 'uae2024'; // ← 여기 바꾸면 됩니다
+
+function checkPassword() {
+  const val = document.getElementById('lockInput').value;
+  const err = document.getElementById('lockError');
+  if (val === LOCAL_PW) {
+    sessionStorage.setItem('uae_auth','1');
+    document.getElementById('lockScreen').classList.remove('show');
+    document.getElementById('appTopbar').style.display='';
+    document.getElementById('appLayout').style.display='';
+    loadNews();
+  } else {
+    err.textContent = '비밀번호가 틀렸습니다';
+    document.getElementById('lockInput').value='';
+    document.getElementById('lockInput').focus();
+    setTimeout(()=>err.textContent='',2000);
+  }
+}
+function logout() {
+  sessionStorage.removeItem('uae_auth');
+  document.getElementById('lockScreen').classList.add('show');
+  document.getElementById('appTopbar').style.display='none';
+  document.getElementById('appLayout').style.display='none';
+  document.getElementById('lockInput').value='';
+}
+// 세션 유지
+if (sessionStorage.getItem('uae_auth')==='1') {
+  document.getElementById('lockScreen').classList.remove('show');
+  document.getElementById('appTopbar').style.display='';
+  document.getElementById('appLayout').style.display='';
+}
+
+// ════════════════════════════════════════
+// HTML 디코딩
+// ════════════════════════════════════════
 function decodeHtml(str) {
   if (!str) return '';
   return str
     .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&')
     .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ')
     .replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(n))
-    .replace(/<[^>]+>/g,''); // strip any leftover tags
+    .replace(/<[^>]+>/g,'');
 }
 
-// ── 네이버 인뉴스 URL 변환 ────────────────────────────────────────────────
-// 우선순위: 1) n.news.naver.com 인뉴스 링크  2) 언론사 아웃링크
-// 절대로 검색URL로 만들지 않음
+// ════════════════════════════════════════
+// 링크 처리
+// ════════════════════════════════════════
 function naverNewsUrl(item) {
   if (!item) return '#';
-  // API link 필드가 n.news.naver.com 또는 news.naver.com 이면 인뉴스
   const link = item.naverLink || item.link || '';
-  if (link.includes('n.news.naver.com') || link.includes('news.naver.com/')) {
-    return link;
-  }
-  // 아니면 언론사 직접 링크
+  if (link.includes('n.news.naver.com') || link.includes('news.naver.com/')) return link;
   return item.originallink || item.link || '#';
 }
 
-// ── 언론사 favicon URL ─────────────────────────────────────────────────────
+// ════════════════════════════════════════
+// 언론사
+// ════════════════════════════════════════
 const SOURCE_DISPLAY = {
-  'chosun.com':'조선일보','donga.com':'동아일보','joongang.co.kr':'중앙일보',
-  'hani.co.kr':'한겨레','khan.co.kr':'경향신문','mk.co.kr':'매일경제',
+  'chosun.com':'조선','donga.com':'동아','joongang.co.kr':'중앙',
+  'hani.co.kr':'한겨레','khan.co.kr':'경향','mk.co.kr':'매일경제',
   'hankyung.com':'한국경제','sedaily.com':'서울경제','asiae.co.kr':'아시아경제',
   'mt.co.kr':'머니투데이','newsis.com':'뉴시스','news1.kr':'뉴스1',
-  'yna.co.kr':'연합뉴스','yonhapnewstv.co.kr':'연합뉴스TV','ytn.co.kr':'YTN',
+  'yna.co.kr':'연합뉴스','yonhapnewstv.co.kr':'연합TV','ytn.co.kr':'YTN',
   'kbs.co.kr':'KBS','mbc.co.kr':'MBC','sbs.co.kr':'SBS',
   'jtbc.co.kr':'JTBC','tvchosun.com':'TV조선','mbn.co.kr':'MBN',
   'biz.chosun.com':'조선비즈','economist.co.kr':'이코노미스트',
 };
-function sourceDisplay(domain) {
-  if (!domain) return '';
-  const clean = domain.replace(/^www\./,'');
-  return SOURCE_DISPLAY[clean] || clean.replace(/\.(co\.kr|com|kr|net)$/,'').split('.').slice(-1)[0];
+// 중요 언론사 (중요도 가산점)
+const TIER1 = new Set(['chosun.com','donga.com','joongang.co.kr','hani.co.kr','khan.co.kr','mk.co.kr','hankyung.com','yna.co.kr','kbs.co.kr','mbc.co.kr','sbs.co.kr','jtbc.co.kr']);
+
+function sourceDisplay(d) {
+  if (!d) return '';
+  const c = d.replace(/^www\./,'');
+  return SOURCE_DISPLAY[c] || c.replace(/\.(co\.kr|com|kr|net)$/,'').split('.').slice(-1)[0];
 }
-function faviconUrl(domain) {
-  if (!domain) return null;
-  return `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
-}
-function sourceFaviconHtml(domain, size=14) {
+function faviconUrl(d) { return `https://www.google.com/s2/favicons?sz=32&domain=${d||'naver.com'}`; }
+function sourceFaviconHtml(domain) {
   const disp = sourceDisplay(domain);
-  const initial = disp ? disp.slice(0,1) : '?';
-  return `<img class="source-favicon" width="${size}" height="${size}"
-    src="${faviconUrl(domain)}"
-    onerror="this.outerHTML='<span class=\\'source-favicon-fallback\\'>${initial}</span>'"
-    alt="${disp}">`;
+  return `<img class="source-favicon" src="${faviconUrl(domain)}"
+    onerror="this.style.display='none'" alt="${disp}">`;
 }
 
-// ── CONFIG ────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════
+// 중요도 스코어 (★ 1~3)
+// ════════════════════════════════════════
+function importanceScore(g) {
+  const lead = g.lead;
+  let score = 0;
+  if (lead.originality === 'exclusive') score += 3;
+  else if (lead.originality === 'original') score += 2;
+  else score += 1;
+  if (TIER1.has(lead.source)) score += 1;
+  if (g.others.length >= 3) score += 1; // 많이 퍼진 뉴스
+  return Math.min(score, 3); // max 3
+}
+function starsHtml(score) {
+  return `<span class="importance-stars">${[1,2,3].map(i=>
+    `<span class="star ${i<=score?'on':'off'}">★</span>`).join('')}</span>`;
+}
+
+// ════════════════════════════════════════
+// CONFIG & DEMO
+// ════════════════════════════════════════
 const API_BASE  = '/api/news';
 const DEMO_MODE = !window.location.hostname.includes('vercel.app')
                && !window.location.hostname.includes('localhost');
 
-// ── STATE ─────────────────────────────────────────────────────────────────
+const DEMO = {
+  groups:[
+    {id:'g0',lead:{title:'[단독] 아부다비 ADNOC, 한국 조선사에 LNG선 10척 발주… 25억 달러',description:'아부다비 국영석유회사 ADNOC이 HD현대와 삼성중공업에 LNG운반선 10척을 발주했다. 총 계약금액 25억 달러로 국내 조선업 역대 단일 최대 중동 수주다.',source:'chosun.com',time:'10분 전',keyword:'아부다비',originality:'exclusive',naverLink:'https://news.naver.com/',thumbnail:'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=280&q=80'},others:[{title:'ADNOC, 한국 HD현대·삼성중공업과 LNG선 계약',source:'yna.co.kr',time:'35분 전',naverLink:'https://news.naver.com/'},{title:'삼성중공업·HD현대, 아부다비서 LNG선 수주',source:'hankyung.com',time:'50분 전',naverLink:'https://news.naver.com/'},{title:'K-조선, 중동서 또 대박… ADNOC 25억弗 수주',source:'mk.co.kr',time:'1시간 전',naverLink:'https://news.naver.com/'}]},
+    {id:'g1',lead:{title:'&quot;두바이로 가는 한국 프리랜서들&quot;… UAE 신비자, 실제로 써봤더니',description:'UAE 장기비자 제도를 실제 취득한 한국인 4명을 인터뷰했다. 서류 준비부터 거주증 발급까지 4주 소요됐고 소득 증빙이 걸림돌이었다.',source:'hani.co.kr',time:'45분 전',keyword:'UAE',originality:'original',naverLink:'https://news.naver.com/',thumbnail:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=280&q=80'},others:[{title:'UAE 비자 전면 개편… 프리랜서도 5년 장기비자',source:'sedaily.com',time:'20분 전',naverLink:'https://news.naver.com/'}]},
+    {id:'g2',lead:{title:'에미레이트항공, 인천 노선 증편 신청… 주 21→28편',description:'에미레이트항공이 인천-두바이 노선을 주 28편으로 늘려달라고 국토부에 공식 요청했다.',source:'ytn.co.kr',time:'30분 전',keyword:'UAE',originality:'pr',naverLink:'https://news.naver.com/',thumbnail:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=80'},others:[{title:'에미레이트항공 인천 노선 증편 추진',source:'biz.chosun.com',time:'55분 전',naverLink:'https://news.naver.com/'},{title:'두바이~인천, 에미레이트 하루 4편 시대 열리나',source:'asiae.co.kr',time:'1시간 10분 전',naverLink:'https://news.naver.com/'}]},
+    {id:'g3',lead:{title:'두바이 엑스포시티, 한국 스타트업 전용 허브 조성 협약',description:'두바이 엑스포시티가 코트라와 협력해 한국 스타트업 전용 허브를 조성한다. 연간 30개 기업 지원.',source:'mk.co.kr',time:'5분 전',keyword:'두바이',originality:'original',naverLink:'https://news.naver.com/',thumbnail:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=280&q=80'},others:[]},
+    {id:'g4',lead:{title:'아부다비 루브르 박물관, 한국 특별전 2026년 봄 개최 확정',description:'아부다비 루브르 박물관이 2026년 봄 한국 특별전을 연다. 국립중앙박물관과 공동 기획으로 200여 점 전시.',source:'hani.co.kr',time:'3시간 전',keyword:'아부다비',originality:'original',naverLink:'https://news.naver.com/',thumbnail:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=280&q=80'},others:[]},
+    {id:'g5',lead:{title:'두바이 부동산 3년 연속 두 자릿수 상승… 한인 묻지마 투자 경고',description:'두바이 부동산 가격이 3년 연속 두 자릿수 상승하며 과열 우려가 커지고 있다.',source:'news1.kr',time:'1시간 25분 전',keyword:'두바이',originality:'original',naverLink:'https://news.naver.com/',thumbnail:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=280&q=80'},others:[]},
+  ],
+  filteredCount:2,filteredReasons:['축구'],total:17,
+  fetchedAt:new Date().toISOString()
+};
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
 let state = {
   keywords:['두바이','아부다비','UAE'],
   filters:['축구','스포츠','골프'],
-  activeKeyword:null, sort:'latest',
-  hidden:new Set(), expandedGroups:new Set(),
-  data:null, activeTab:'feed',
+  viewFilter:'all',       // all/unread/read/exclusive/original/important/liked
+  activeKeyword:null,
+  sort:'latest',          // latest/importance
+  view:'card',            // card/compact
+  hidden:new Set(),
+  expandedGroups:new Set(),
+  data:null,
   likes: JSON.parse(localStorage.getItem('uae_likes')||'{}'),
   tags:  JSON.parse(localStorage.getItem('uae_tags')||'{}'),
   allTags: JSON.parse(localStorage.getItem('uae_allTags')||'["경제","비자","부동산","항공","외교"]'),
-  activeBookmarkTag: null,
-  tagModalId: null,
-  // 읽음 상태
   read: JSON.parse(localStorage.getItem('uae_read')||'{}'),
-  // 선택 모드
-  selectMode: false,
-  selected: new Set(),
+  selectMode:false,
+  selected:new Set(),
+  focusedIdx:-1,
+  tagModalId:null,
+  _bulkIds:null,
 };
 function savePersist() {
-  localStorage.setItem('uae_likes', JSON.stringify(state.likes));
-  localStorage.setItem('uae_tags',  JSON.stringify(state.tags));
-  localStorage.setItem('uae_allTags', JSON.stringify(state.allTags));
-  localStorage.setItem('uae_read',  JSON.stringify(state.read));
+  localStorage.setItem('uae_likes',JSON.stringify(state.likes));
+  localStorage.setItem('uae_tags', JSON.stringify(state.tags));
+  localStorage.setItem('uae_allTags',JSON.stringify(state.allTags));
+  localStorage.setItem('uae_read', JSON.stringify(state.read));
 }
 
-// ── DEMO DATA ─────────────────────────────────────────────────────────────
-const DEMO = {
-  groups:[
-    { id:'g0', lead:{
-        title:'[단독] 아부다비 ADNOC, 한국 조선사에 LNG선 10척 발주… 25억 달러',
-        description:'아부다비 국영석유회사 ADNOC이 HD현대와 삼성중공업에 LNG운반선 10척을 발주했다. 총 계약금액 25억 달러로 국내 조선업 역대 단일 최대 중동 수주다. 본지가 단독으로 계약서 내용을 입수해 세부 조건을 확인했다.',
-        source:'chosun.com', time:'10분 전', keyword:'아부다비', originality:'exclusive',
-        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=101',
-        thumbnail:'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=280&q=80'},
-      others:[
-        {title:'ADNOC, 한국 HD현대·삼성중공업과 LNG선 계약', source:'yna.co.kr', time:'35분 전', naverLink:'https://news.naver.com/'},
-        {title:'삼성중공업·HD현대, 아부다비서 LNG선 수주 쾌거', source:'hankyung.com', time:'50분 전', naverLink:'https://news.naver.com/'},
-        {title:'K-조선, 중동서 또 대박… ADNOC 25억弗 수주', source:'mk.co.kr', time:'1시간 전', naverLink:'https://news.naver.com/'},
-      ]},
-    { id:'g1', lead:{
-        title:'&quot;두바이로 가는 한국 프리랜서들&quot;… UAE 신비자, 실제로 써봤더니',
-        description:'UAE 장기비자 제도를 실제 취득한 한국인 4명을 인터뷰했다. 서류 준비부터 거주증 발급까지 4주 소요됐고 예상보다 까다로운 소득 증빙이 걸림돌이었다. 전문가들은 세금·연금 공백 문제도 꼼꼼히 살펴야 한다고 조언한다.',
-        source:'hani.co.kr', time:'45분 전', keyword:'UAE', originality:'original',
-        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=102',
-        thumbnail:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=280&q=80'},
-      others:[
-        {title:'UAE 비자 전면 개편… 프리랜서·유튜버도 5년 장기비자', source:'sedaily.com', time:'20분 전', naverLink:'https://news.naver.com/'},
-        {title:'UAE, 디지털노마드 비자 요건 완화… 한국인 신청 늘 듯', source:'newsis.com', time:'1시간 30분 전', naverLink:'https://news.naver.com/'},
-      ]},
-    { id:'g2', lead:{
-        title:'에미레이트항공, 인천 노선 증편 신청… 주 21→28편',
-        description:'에미레이트항공이 인천-두바이 노선을 주 28편으로 늘려달라고 국토부에 공식 요청했다. 한국 노선 수요가 급증해 현재 좌석이 부족한 상황이다. 슬롯 협의가 타결되면 내년 하계 스케줄부터 반영된다.',
-        source:'ytn.co.kr', time:'30분 전', keyword:'UAE', originality:'pr',
-        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=103',
-        thumbnail:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=80'},
-      others:[
-        {title:'에미레이트항공 인천 노선 증편 추진… 슬롯 확보가 관건', source:'biz.chosun.com', time:'55분 전', naverLink:'https://news.naver.com/'},
-        {title:'두바이~인천, 에미레이트 하루 4편 시대 열리나', source:'asiae.co.kr', time:'1시간 10분 전', naverLink:'https://news.naver.com/'},
-        {title:'항공편 늘리면 두바이 여행 더 싸질까… 소비자 기대감', source:'mt.co.kr', time:'1시간 40분 전', naverLink:'https://news.naver.com/'},
-      ]},
-    { id:'g3', lead:{
-        title:'두바이 엑스포시티, 한국 스타트업 전용 허브 조성 협약',
-        description:'두바이 엑스포시티가 코트라와 협력해 한국 스타트업 전용 허브를 조성한다. 연간 30개 기업을 지원하며 초기 입주 비용의 70%를 보조한다. 협약식은 현지에서 코트라 두바이 무역관장과 엑스포시티 CEO가 서명했다.',
-        source:'mk.co.kr', time:'5분 전', keyword:'두바이', originality:'original',
-        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=104',
-        thumbnail:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=280&q=80'},
-      others:[]},
-    { id:'g4', lead:{
-        title:'아부다비 루브르 박물관, 한국 특별전 2026년 봄 개최 확정',
-        description:'아부다비 루브르 박물관이 2026년 봄 \'한국: 전통과 혁신\' 특별전을 연다. 국립중앙박물관과 공동 기획으로 200여 점이 전시된다. 삼국시대 유물부터 현대 미디어아트까지 아우르는 대규모 기획이다.',
-        source:'hani.co.kr', time:'3시간 전', keyword:'아부다비', originality:'original',
-        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=105',
-        thumbnail:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=280&q=80'},
-      others:[]},
-    { id:'g5', lead:{
-        title:'두바이 부동산 3년 연속 두 자릿수 상승… 한인 \'묻지마 투자\' 경고',
-        description:'두바이 부동산 가격이 3년 연속 두 자릿수 상승하며 과열 우려가 커지고 있다. 전문가들은 한국 투자자들에게 신중한 접근을 당부한다. 일부 단지는 분양가 대비 40% 이상 프리미엄이 붙어 거래 중이다.',
-        source:'news1.kr', time:'1시간 25분 전', keyword:'두바이', originality:'original',
-        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=106',
-        thumbnail:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=280&q=80'},
-      others:[]},
-  ],
-  filteredCount:2, filteredReasons:['축구'], total:17,
-  fetchedAt: new Date().toISOString()
-};
-
-// ── API ───────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════
+// API
+// ════════════════════════════════════════
 async function loadNews() {
-  const btn = document.querySelector('.refresh-btn');
-  btn.textContent = '↻ 불러오는 중...';
-  if (state.activeTab === 'feed')
-    document.getElementById('newsList').innerHTML =
-      `<div class="loading"><div class="loading-spinner"></div><div class="loading-text">뉴스 불러오는 중...</div></div>`;
+  const btn = document.querySelector('.topbar-btn[onclick="loadNews()"]');
+  if(btn) btn.textContent='↻ 로딩중...';
+  document.getElementById('newsList').innerHTML=
+    `<div class="loading"><div class="loading-spinner"></div><div class="loading-text">뉴스 불러오는 중...</div></div>`;
   try {
     let data;
-    if (DEMO_MODE) { await new Promise(r=>setTimeout(r,800)); data=DEMO; }
+    if (DEMO_MODE) { await new Promise(r=>setTimeout(r,700)); data=DEMO; }
     else {
-      const p = new URLSearchParams({keywords:state.keywords.join(','), filters:state.filters.join(',')});
-      const res = await fetch(`${API_BASE}?${p}`);
-      if (!res.ok) throw new Error();
-      data = await res.json();
+      const p=new URLSearchParams({keywords:state.keywords.join(','),filters:state.filters.join(',')});
+      const res=await fetch(`${API_BASE}?${p}`);
+      if(!res.ok) throw new Error();
+      data=await res.json();
     }
-    state.data = data;
-    const d = new Date(data.fetchedAt);
-    document.getElementById('lastUpdated').textContent =
-      `업데이트 ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-  } catch(e) { state.data = DEMO; }
-  btn.textContent = '↻ 새로고침';
+    state.data=data;
+    const d=new Date(data.fetchedAt);
+    document.getElementById('lastUpdated').textContent=
+      `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} 업데이트`;
+  } catch(e){ state.data=DEMO; }
+  if(btn) btn.textContent='↻ 새로고침';
   render();
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════
 function render() {
-  renderKeywords(); renderFilters(); renderStats();
-  updateBookmarkCount();
-  if (state.activeTab==='feed') renderFeed();
-  else renderBookmarks();
+  if(!state.data) return;
+  renderSidebarCounts();
+  renderKeywords();
+  renderFilters();
+  renderStats();
+  renderFeed();
+}
+
+function getFilteredGroups() {
+  if(!state.data) return [];
+  let groups = state.data.groups.filter(g=>!state.hidden.has(g.id));
+  // 키워드 필터
+  if(state.activeKeyword) groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
+  // 뷰 필터
+  const vf=state.viewFilter;
+  if(vf==='unread')    groups=groups.filter(g=>!state.read[g.id]);
+  else if(vf==='read') groups=groups.filter(g=>!!state.read[g.id]);
+  else if(vf==='exclusive') groups=groups.filter(g=>g.lead.originality==='exclusive');
+  else if(vf==='original')  groups=groups.filter(g=>g.lead.originality==='original');
+  else if(vf==='important') groups=groups.filter(g=>importanceScore(g)===3);
+  else if(vf==='liked')     groups=groups.filter(g=>!!state.likes[g.id]);
+  // 정렬
+  if(state.sort==='importance') groups=[...groups].sort((a,b)=>importanceScore(b)-importanceScore(a));
+  return groups;
+}
+
+function renderSidebarCounts() {
+  if(!state.data) return;
+  const all = state.data.groups.filter(g=>!state.hidden.has(g.id));
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('cnt-all',all.length);
+  set('cnt-unread',all.filter(g=>!state.read[g.id]).length);
+  set('cnt-read',all.filter(g=>!!state.read[g.id]).length);
+  set('cnt-exclusive',all.filter(g=>g.lead.originality==='exclusive').length);
+  set('cnt-original',all.filter(g=>g.lead.originality==='original').length);
+  set('cnt-important',all.filter(g=>importanceScore(g)===3).length);
+  set('cnt-liked',Object.values(state.likes).filter(Boolean).length);
 }
 
 function renderKeywords() {
-  const data = state.data; const counts = {};
-  if (data) data.groups.forEach(g=>{const k=g.lead.keyword; counts[k]=(counts[k]||0)+1+g.others.length;});
-  document.getElementById('keywordList').innerHTML = state.keywords.map(kw=>`
+  const counts={};
+  if(state.data) state.data.groups.forEach(g=>{const k=g.lead.keyword;counts[k]=(counts[k]||0)+1;});
+  document.getElementById('keywordList').innerHTML=state.keywords.map(kw=>`
     <div class="keyword-item ${state.activeKeyword===kw?'active':''}" onclick="toggleKeyword('${kw}')">
       <span>${kw}</span><span class="keyword-count">${counts[kw]||0}</span>
     </div>`).join('');
 }
 function renderFilters() {
-  document.getElementById('filterList').innerHTML = state.filters.map(f=>`
+  document.getElementById('filterList').innerHTML=state.filters.map(f=>`
     <div class="filter-item"><span>${f}</span>
       <span class="filter-remove" onclick="removeFilter('${f}')">×</span>
     </div>`).join('');
 }
+function renderStats() {
+  const data=state.data; if(!data) return;
+  const ex=data.groups.filter(g=>g.lead.originality==='exclusive').length;
+  const or=data.groups.filter(g=>g.lead.originality==='original').length;
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${data.total||data.groups.length}</div><div class="stat-label">전체</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--red)">${data.filteredCount}</div><div class="stat-label">필터됨</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--orange)">${ex}</div><div class="stat-label">단독</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${or}</div><div class="stat-label">심층</div></div>`;
+}
 
 function renderFeed() {
-  const list=document.getElementById('newsList'), notice=document.getElementById('filterNotice');
-  const data=state.data; if(!data) return;
-  if (data.filteredCount>0) {
-    notice.style.display='flex';
-    notice.innerHTML=`🚫 제외 키워드(${data.filteredReasons.join(', ')})로 <strong style="color:var(--red);margin:0 3px">${data.filteredCount}건</strong> 필터링됨`;
-  } else notice.style.display='none';
-  let groups = data.groups.filter(g=>!state.hidden.has(g.id));
-  if (state.activeKeyword) groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
-  if (!groups.length) { list.innerHTML=`<div class="empty">조건에 맞는 뉴스가 없습니다</div>`; return; }
-  list.innerHTML = groups.map((g,i)=>renderCard(g,i)).join('');
-}
-
-function renderBookmarks() {
   const list=document.getElementById('newsList');
-  document.getElementById('filterNotice').style.display='none';
-  const likedIds = Object.keys(state.likes).filter(id=>state.likes[id]);
-  if (!likedIds.length) { list.innerHTML=`<div class="bookmarks-empty">♥ 좋아요 누른 기사가 없어요<br><span style="font-size:11px;margin-top:8px;display:block">기사 카드의 ♡ 버튼을 눌러보세요</span></div>`; return; }
-  const allGroups = state.data?.groups||[];
-  let saved = allGroups.filter(g=>likedIds.includes(g.id));
+  const notice=document.getElementById('filterNotice');
+  const data=state.data;
+  if(!data) return;
 
-  // 태그 필터
-  const allBTags = [...new Set(likedIds.flatMap(id=>state.tags[id]||[]))];
-  const tagFilterHtml = allBTags.length ? `<div class="bookmark-tag-filter">
-    <button class="btag-btn ${!state.activeBookmarkTag?'active':''}" onclick="setBookmarkTag(null)">전체</button>
-    ${allBTags.map(t=>`<button class="btag-btn ${state.activeBookmarkTag===t?'active':''}" onclick="setBookmarkTag('${t}')">${t}</button>`).join('')}
-  </div>` : '';
+  // 필터 알림
+  if(data.filteredCount>0){
+    notice.style.display='flex';
+    notice.innerHTML=`🚫 ${data.filteredReasons.join(', ')} 등 <strong style="color:var(--red);margin:0 3px">${data.filteredCount}건</strong> 필터됨`;
+  } else notice.style.display='none';
 
-  if (state.activeBookmarkTag) saved=saved.filter(g=>(state.tags[g.id]||[]).includes(state.activeBookmarkTag));
-  if (!saved.length) { list.innerHTML=tagFilterHtml+`<div class="empty">해당 태그 기사가 없습니다</div>`; return; }
-  list.innerHTML = tagFilterHtml + saved.map((g,i)=>renderCard(g,i,true)).join('');
+  const groups=getFilteredGroups();
+
+  // 피드 제목
+  const filterLabels={'all':'전체','unread':'안읽음','read':'읽음',
+    'exclusive':'단독','original':'심층','important':'중요','liked':'보관함'};
+  document.getElementById('feedTitle').innerHTML=
+    `${filterLabels[state.viewFilter]||'전체'} <strong id="feedCount">${groups.length}건</strong>`;
+
+  if(!groups.length){
+    list.innerHTML=`<div class="empty">조건에 맞는 뉴스가 없습니다</div>`;
+    list.className='news-list'+(state.view==='compact'?' compact-view':'');
+    return;
+  }
+
+  list.className='news-list'+(state.view==='compact'?' compact-view':'');
+  if(state.selectMode) list.classList.add('select-mode');
+
+  list.innerHTML=groups.map((g,i)=>renderCard(g,i)).join('');
 }
 
-function renderCard(g, i, isBookmark=false) {
-  const lead = g.lead;
-  const isGroup = g.others.length>0;
-  const isExpanded = state.expandedGroups.has(g.id);
-  const isLiked = !!state.likes[g.id];
-  const isRead  = !!state.read[g.id];
-  const isSelected = state.selected.has(g.id);
-  const cardTags = state.tags[g.id]||[];
-  const highlight = lead.originality==='exclusive'||lead.originality==='original';
+function renderCard(g, i) {
+  const lead=g.lead;
+  const isGroup=g.others.length>0;
+  const isExpanded=state.expandedGroups.has(g.id);
+  const isLiked=!!state.likes[g.id];
+  const isRead=!!state.read[g.id];
+  const isSelected=state.selected.has(g.id);
+  const cardTags=state.tags[g.id]||[];
+  const score=importanceScore(g);
+  const highlight=lead.originality==='exclusive'||lead.originality==='original';
 
-  const badge = lead.originality==='exclusive'
+  const badge=lead.originality==='exclusive'
     ? `<span class="orig-badge exclusive">단독</span>`
-    : lead.originality==='original' ? `<span class="orig-badge original">심층</span>` : '';
+    : lead.originality==='original'
+    ? `<span class="orig-badge original">심층</span>`:'';
 
-  const title = decodeHtml(lead.title).replace(/^\[단독\]\s*/,'');
-  const desc  = decodeHtml(lead.description);
-  const href  = naverNewsUrl(lead);
-  const srcDisp = sourceDisplay(lead.source);
+  const title=decodeHtml(lead.title).replace(/^\[단독\]\s*/,'');
+  const desc=decodeHtml(lead.description);
+  const href=naverNewsUrl(lead);
+  const srcDisp=sourceDisplay(lead.source);
 
-  const thumbHtml = lead.thumbnail
-    ? `<img src="${lead.thumbnail}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML=fallbackThumb('${lead.source}')">`
+  const thumbHtml=lead.thumbnail
+    ? `<img src="${lead.thumbnail}" alt="" loading="lazy" onerror="this.style.display='none'">`
     : fallbackThumb(lead.source);
 
-  const dupeRows = g.others.map(n=>{
-    const dHref = naverNewsUrl(n);
-    const dDisp = sourceDisplay(n.source);
-    return `<a class="dupe-item" href="${dHref}" target="_blank" rel="noopener noreferrer">
+  const dupeRows=g.others.map(n=>`
+    <a class="dupe-item" href="${naverNewsUrl(n)}" target="_blank" rel="noopener noreferrer">
       <div class="dupe-src-wrap">
         <img class="dupe-favicon" src="${faviconUrl(n.source)}" onerror="this.style.display='none'" alt="">
-        <span class="dupe-source">${dDisp}</span>
+        <span class="dupe-source">${sourceDisplay(n.source)}</span>
       </div>
       <span class="dupe-title">${decodeHtml(n.title)}</span>
       <span class="dupe-time">${n.time||''}</span>
-    </a>`;
-  }).join('');
+    </a>`).join('');
 
-  const otherSources = g.others.map(n=>sourceDisplay(n.source)).join(', ');
-  const tagChips = cardTags.map(t=>`<span class="btag-chip">${t}</span>`).join('');
+  const otherSources=g.others.map(n=>sourceDisplay(n.source)).join(', ');
+  const tagChips=cardTags.map(t=>`<span class="btag-chip">${t}</span>`).join('');
 
   return `
   <div class="news-card ${isGroup?'group-card':''} ${highlight?'highlight':''} ${isRead?'read':''} ${isSelected?'selected':''}"
-       style="animation-delay:${i*40}ms" id="card-${g.id}"
+       style="animation-delay:${i*35}ms" id="card-${g.id}"
        onclick="handleCardClick('${g.id}',event)">
     <input type="checkbox" class="card-checkbox" ${isSelected?'checked':''} onclick="toggleSelect('${g.id}',event)">
     <a class="group-lead-link" href="${href}" target="_blank" rel="noopener noreferrer"
@@ -601,6 +876,7 @@ function renderCard(g, i, isBookmark=false) {
           <div class="card-meta">
             <span class="read-dot" title="${isRead?'읽음':'안읽음'}"></span>
             ${badge}
+            ${starsHtml(score)}
             <div class="source-row">
               ${sourceFaviconHtml(lead.source)}
               <span class="card-source">${srcDisp}</span>
@@ -610,136 +886,62 @@ function renderCard(g, i, isBookmark=false) {
           </div>
           <div class="card-title">${title}</div>
           <div class="card-desc">${desc}</div>
-          ${tagChips ? `<div class="bookmark-tags-on-card">${tagChips}</div>` : ''}
+          ${tagChips?`<div class="bookmark-tags-on-card">${tagChips}</div>`:''}
           <div class="card-footer">
             <span class="card-link">네이버 뉴스에서 보기 →</span>
             <div class="card-actions">
-              <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)" title="보관함에 저장">${isLiked?'♥':'♡'}</button>
-              <button class="card-action-btn" onclick="openTagModal('${g.id}',event)" title="태그 달기">🏷</button>
-              <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)" title="읽음 표시">${isRead?'● 읽음':'○ 읽음'}</button>
-              <button class="card-action-btn hide" onclick="hideCard('${g.id}',event)">숨기기</button>
-              <button class="card-action-btn" onclick="copyTitle('${escAttr(title)}',event)">복사</button>
+              <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)">${isLiked?'♥':'♡'}</button>
+              <button class="card-action-btn" onclick="openTagModal('${g.id}',event)">🏷</button>
+              <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)">${isRead?'● 읽':'○ 읽'}</button>
+              <button class="card-action-btn danger" onclick="hideCard('${g.id}',event)">✕</button>
             </div>
           </div>
         </div>
         <div class="card-thumb">${thumbHtml}</div>
       </div>
     </a>
-    ${isGroup ? `
+    ${isGroup?`
     <div class="group-footer">
       <button class="dupe-toggle" onclick="toggleGroup('${g.id}',event)">
-        ${isExpanded ? '▲ 접기'
-          : `▼ <span style="color:var(--text-dim)">${srcDisp}</span> 외 <strong style="color:var(--gold)">${g.others.length}건</strong> — ${otherSources}`}
+        ${isExpanded?'▲ 접기':`▼ ${srcDisp} 외 <strong style="color:var(--blue)">${g.others.length}건</strong> — ${otherSources}`}
       </button>
     </div>
-    ${isExpanded ? `<div class="dupe-list">${dupeRows}</div>` : ''}` : ''}
+    ${isExpanded?`<div class="dupe-list">${dupeRows}</div>`:''}`:''
+    }
   </div>`;
 }
 
 function fallbackThumb(source) {
-  const disp = sourceDisplay(source||'');
-  return `<div class="card-thumb-placeholder" style="min-height:110px;background:var(--surface2)">
-    <img class="source-favicon" width="28" height="28" style="width:28px;height:28px;border-radius:4px;opacity:.5"
-      src="${faviconUrl(source)}" onerror="this.style.display='none'" alt="">
-    <span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:4px">${disp}</span>
+  return `<div style="min-height:100px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:100%">
+    <img width="24" height="24" style="border-radius:3px;opacity:.3" src="${faviconUrl(source)}" onerror="this.style.display='none'" alt="">
+    <span style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace">${sourceDisplay(source)}</span>
   </div>`;
 }
-
 function tagsFor(kw) {
-  const map={'두바이':'dubai','아부다비':'abudhabi','UAE':'uae'};
-  return `<span class="card-tag ${map[kw]||''}">${kw}</span>`;
+  const m={'두바이':'dubai','아부다비':'abudhabi','UAE':'uae'};
+  return `<span class="card-tag ${m[kw]||''}">${kw}</span>`;
 }
 
-function renderStats() {
-  const data=state.data; if(!data) return;
-  const ex=data.groups.filter(g=>g.lead.originality==='exclusive').length;
-  const or=data.groups.filter(g=>g.lead.originality==='original').length;
-  document.getElementById('statsGrid').innerHTML=`
-    <div class="stat-card"><div class="stat-num">${data.total||data.groups.length}</div><div class="stat-label">전체 기사</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--red)">${data.filteredCount}</div><div class="stat-label">필터됨</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:#f59e42">${ex}</div><div class="stat-label">단독</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${or}</div><div class="stat-label">심층</div></div>`;
-}
-
-function updateBookmarkCount() {
-  const n = Object.values(state.likes).filter(Boolean).length;
-  document.getElementById('bookmarkCount').textContent = n;
-}
-
-// ── ACTIONS ───────────────────────────────────────────────────────────────
-function toggleLike(gid, e) {
-  e.stopPropagation(); e.preventDefault();
-  state.likes[gid] = !state.likes[gid];
-  savePersist(); render();
-}
-
-function openTagModal(gid, e) {
-  e.stopPropagation(); e.preventDefault();
-  state.tagModalId = gid;
-  renderTagModal();
-  document.getElementById('tagModal').classList.add('open');
-}
-function closeTagModal() {
-  document.getElementById('tagModal').classList.remove('open');
-  state.tagModalId = null;
-  state._bulkIds = null;
-  if (state.selectMode) clearSelection();
-  else render();
-}
-function renderTagModal() {
-  const gid = state.tagModalId;
-  const selected = state.tags[gid]||[];
-  document.getElementById('modalTagList').innerHTML = state.allTags.map(t=>`
-    <span class="modal-tag ${selected.includes(t)?'selected':''}" onclick="toggleTagOnCard('${t}')">
-      ${t}${selected.includes(t)?` <span class="tag-remove" onclick="removeTagFromAll(event,'${t}')">×</span>`:''}
-    </span>`).join('');
-}
-function toggleTagOnCard(tag) {
-  const gid = state.tagModalId;
-  if (!gid) return;
-  const ids = gid === '__bulk__' ? (state._bulkIds||[]) : [gid];
-  ids.forEach(id => {
-    if (!state.tags[id]) state.tags[id]=[];
-    const idx=state.tags[id].indexOf(tag);
-    if(idx>-1) state.tags[id].splice(idx,1); else state.tags[id].push(tag);
-    if(state.tags[id].length>0) state.likes[id]=true;
-  });
-  savePersist(); renderTagModal();
-}
-function addModalTag() {
-  const inp=document.getElementById('modalTagInput'), v=inp.value.trim();
-  if(!v) return;
-  if(!state.allTags.includes(v)) state.allTags.push(v);
-  toggleTagOnCard(v);
-  inp.value='';
-}
-function removeTagFromAll(e, tag) {
-  e.stopPropagation();
-  state.allTags=state.allTags.filter(t=>t!==tag);
-  Object.keys(state.tags).forEach(id=>{
-    state.tags[id]=(state.tags[id]||[]).filter(t=>t!==tag);
-  });
-  savePersist(); renderTagModal();
-}
-
-function switchTab(el, tab) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+// ════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════
+function setViewFilter(el, filter) {
+  document.querySelectorAll('#viewFilters .nav-item').forEach(n=>n.classList.remove('active'));
   el.classList.add('active');
-  state.activeTab=tab; render();
+  state.viewFilter=filter;
+  render();
 }
-function setBookmarkTag(tag) { state.activeBookmarkTag=tag; render(); }
-
+function setView(v, el) {
+  state.view=v;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderFeed();
+}
+function setSort(el, sort) {
+  document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); state.sort=sort; renderFeed();
+}
 function toggleKeyword(kw) { state.activeKeyword=state.activeKeyword===kw?null:kw; render(); }
-function toggleGroup(gid,e) {
-  e.stopPropagation(); e.preventDefault();
-  state.expandedGroups.has(gid)?state.expandedGroups.delete(gid):state.expandedGroups.add(gid); render();
-}
-function hideCard(gid,e) { e.stopPropagation(); e.preventDefault(); state.hidden.add(gid); render(); }
-function copyTitle(title,e) {
-  e.stopPropagation(); e.preventDefault();
-  navigator.clipboard.writeText(title).catch(()=>{});
-  const btn=e.target; btn.textContent='복사됨!'; setTimeout(()=>btn.textContent='복사',1200);
-}
 function addKeyword() {
   const i=document.getElementById('newKeyword'),v=i.value.trim();
   if(v&&!state.keywords.includes(v)){state.keywords.push(v);i.value='';loadNews();}
@@ -749,120 +951,203 @@ function addFilter() {
   if(v&&!state.filters.includes(v)){state.filters.push(v);i.value='';if(state.data)render();}
 }
 function removeFilter(f){state.filters=state.filters.filter(x=>x!==f);if(state.data)render();}
-function setSort(el,sort){
-  document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active'); state.sort=sort; render();
+
+function markRead(gid,e) {
+  state.read[gid]=true; savePersist();
+  const card=document.getElementById('card-'+gid);
+  if(card){card.classList.add('read');}
+}
+function toggleReadBtn(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.read[gid]=!state.read[gid]; savePersist();
+  const card=document.getElementById('card-'+gid);
+  if(card){
+    card.classList.toggle('read',!!state.read[gid]);
+    const btn=e.target; btn.textContent=state.read[gid]?'● 읽':'○ 읽';
+  }
+  renderSidebarCounts();
+}
+function toggleGroup(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.expandedGroups.has(gid)?state.expandedGroups.delete(gid):state.expandedGroups.add(gid);
+  render();
+}
+function hideCard(gid,e) {
+  e.stopPropagation();e.preventDefault(); state.hidden.add(gid); render();
+}
+function toggleLike(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.likes[gid]=!state.likes[gid]; savePersist(); render();
+}
+function openTagModal(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.tagModalId=gid; renderTagModal();
+  document.getElementById('tagModal').classList.add('open');
+}
+function closeTagModal() {
+  document.getElementById('tagModal').classList.remove('open');
+  state.tagModalId=null; state._bulkIds=null;
+  if(state.selectMode) clearSelection(); else render();
+}
+function renderTagModal() {
+  const gid=state.tagModalId;
+  const selected=gid==='__bulk__'?[]:(state.tags[gid]||[]);
+  document.getElementById('modalTagList').innerHTML=state.allTags.map(t=>`
+    <span class="modal-tag ${selected.includes(t)?'selected':''}" onclick="toggleTagOnCard('${t}')">
+      ${t}${selected.includes(t)?` <span class="tag-remove" onclick="removeTagFromAll(event,'${t}')">×</span>`:''}
+    </span>`).join('');
+}
+function toggleTagOnCard(tag) {
+  const gid=state.tagModalId; if(!gid) return;
+  const ids=gid==='__bulk__'?(state._bulkIds||[]):[gid];
+  ids.forEach(id=>{
+    if(!state.tags[id]) state.tags[id]=[];
+    const idx=state.tags[id].indexOf(tag);
+    if(idx>-1) state.tags[id].splice(idx,1); else state.tags[id].push(tag);
+    if(state.tags[id].length>0) state.likes[id]=true;
+  });
+  savePersist(); renderTagModal();
+}
+function addModalTag() {
+  const inp=document.getElementById('modalTagInput'),v=inp.value.trim();
+  if(!v) return;
+  if(!state.allTags.includes(v)) state.allTags.push(v);
+  toggleTagOnCard(v); inp.value='';
+}
+function removeTagFromAll(e,tag) {
+  e.stopPropagation(); state.allTags=state.allTags.filter(t=>t!==tag);
+  Object.keys(state.tags).forEach(id=>{state.tags[id]=(state.tags[id]||[]).filter(t=>t!==tag);});
+  savePersist(); renderTagModal();
 }
 
-// ── 읽음 처리 ─────────────────────────────────────────────────────────────
-function markRead(gid, e) {
-  // 링크 클릭 시 자동 읽음 처리 (e는 그냥 통과)
-  state.read[gid] = true;
-  savePersist();
-  // DOM 직접 업데이트 (re-render 없이)
-  const card = document.getElementById('card-'+gid);
-  if (card) {
-    card.classList.add('read');
-    const dot = card.querySelector('.read-dot');
-    if (dot) dot.title = '읽음';
-    const readBtn = card.querySelector('.card-action-btn[onclick*="toggleReadBtn"]');
-    if (readBtn) readBtn.textContent = '● 읽음';
-  }
-}
-function toggleReadBtn(gid, e) {
-  e.stopPropagation(); e.preventDefault();
-  state.read[gid] = !state.read[gid];
-  savePersist();
-  const card = document.getElementById('card-'+gid);
-  if (card) {
-    card.classList.toggle('read', !!state.read[gid]);
-    const btn = e.target;
-    btn.textContent = state.read[gid] ? '● 읽음' : '○ 읽음';
-    const dot = card.querySelector('.read-dot');
-    if (dot) dot.title = state.read[gid] ? '읽음' : '안읽음';
-  }
-}
-
-// ── 선택 모드 ─────────────────────────────────────────────────────────────
+// ── 선택 모드 ──
 function toggleSelectMode() {
-  state.selectMode = !state.selectMode;
-  state.selected.clear();
-  const btn = document.getElementById('selectModeBtn');
-  const list = document.getElementById('newsList');
-  btn.classList.toggle('active', state.selectMode);
-  list.classList.toggle('select-mode', state.selectMode);
-  updateToolbar();
+  state.selectMode=!state.selectMode; state.selected.clear();
+  document.getElementById('selectModeBtn').classList.toggle('active',state.selectMode);
+  updateToolbar(); renderFeed();
 }
-function handleCardClick(gid, e) {
-  if (!state.selectMode) return;
-  // 선택모드일 때 카드 클릭 = 체크박스 토글
-  if (e.target.closest('a') && !e.target.closest('.card-checkbox')) return;
-  toggleSelect(gid, e);
+function handleCardClick(gid,e) {
+  if(!state.selectMode) return;
+  if(e.target.closest('a')) return;
+  toggleSelect(gid,e);
 }
-function toggleSelect(gid, e) {
-  e.stopPropagation(); e.preventDefault();
-  if (state.selected.has(gid)) state.selected.delete(gid);
-  else state.selected.add(gid);
-  const card = document.getElementById('card-'+gid);
-  if (card) {
-    card.classList.toggle('selected', state.selected.has(gid));
-    const cb = card.querySelector('.card-checkbox');
-    if (cb) cb.checked = state.selected.has(gid);
+function toggleSelect(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.selected.has(gid)?state.selected.delete(gid):state.selected.add(gid);
+  const card=document.getElementById('card-'+gid);
+  if(card){
+    card.classList.toggle('selected',state.selected.has(gid));
+    const cb=card.querySelector('.card-checkbox'); if(cb) cb.checked=state.selected.has(gid);
   }
   updateToolbar();
 }
 function updateToolbar() {
-  const n = state.selected.size;
-  const tb = document.getElementById('selectToolbar');
-  tb.classList.toggle('visible', state.selectMode && n > 0);
-  document.getElementById('selCount').textContent = `${n}개 선택`;
+  const n=state.selected.size;
+  document.getElementById('selectToolbar').classList.toggle('visible',state.selectMode&&n>0);
+  document.getElementById('selCount').textContent=`${n}개`;
 }
 function clearSelection() {
-  state.selected.clear();
-  state.selectMode = false;
+  state.selected.clear(); state.selectMode=false;
   document.getElementById('selectModeBtn').classList.remove('active');
-  document.getElementById('newsList').classList.remove('select-mode');
-  updateToolbar();
-  render();
+  updateToolbar(); render();
+}
+function bulkMarkRead(){state.selected.forEach(id=>{state.read[id]=true;});savePersist();clearSelection();}
+function bulkMarkUnread(){state.selected.forEach(id=>{state.read[id]=false;});savePersist();clearSelection();}
+function bulkLike(){state.selected.forEach(id=>{state.likes[id]=true;});savePersist();clearSelection();}
+function bulkHide(){state.selected.forEach(id=>state.hidden.add(id));clearSelection();}
+function bulkOpenTagModal(){
+  const ids=[...state.selected]; if(!ids.length) return;
+  state.tagModalId='__bulk__'; state._bulkIds=ids;
+  renderTagModal(); document.getElementById('tagModal').classList.add('open');
 }
 
-// ── 일괄 작업 ─────────────────────────────────────────────────────────────
-function bulkMarkRead() {
-  state.selected.forEach(id => { state.read[id]=true; });
-  savePersist(); clearSelection();
-}
-function bulkMarkUnread() {
-  state.selected.forEach(id => { state.read[id]=false; });
-  savePersist(); clearSelection();
-}
-function bulkLike() {
-  state.selected.forEach(id => { state.likes[id]=true; });
-  savePersist(); clearSelection();
-}
-function bulkHide() {
-  state.selected.forEach(id => state.hidden.add(id));
-  clearSelection();
-}
-function bulkOpenTagModal() {
-  // 선택된 것들 중 첫 번째로 태그 모달 열기 (일괄 적용)
-  const ids = [...state.selected];
-  if (!ids.length) return;
-  state.tagModalId = '__bulk__';
-  state._bulkIds = ids;
-  renderTagModal();
-  document.getElementById('tagModal').classList.add('open');
+// ════════════════════════════════════════
+// ⌨️ KEYBOARD SHORTCUTS
+// ════════════════════════════════════════
+let kbdHintVisible=false;
+function toggleKbdHint() {
+  kbdHintVisible=!kbdHintVisible;
+  document.getElementById('kbdHint').classList.toggle('show',kbdHintVisible);
 }
 
+document.addEventListener('keydown', e => {
+  // 입력 중이면 무시
+  if(e.target.matches('input,textarea')) return;
+  // 잠금 상태면 무시
+  if(document.getElementById('lockScreen').classList.contains('show')) return;
 
+  const groups=getFilteredGroups();
+  const n=groups.length;
+
+  switch(e.key) {
+    case 'j': case 'ArrowDown':
+      e.preventDefault();
+      state.focusedIdx=Math.min(state.focusedIdx+1, n-1);
+      focusCard(groups, state.focusedIdx);
+      break;
+    case 'k': case 'ArrowUp':
+      e.preventDefault();
+      state.focusedIdx=Math.max(state.focusedIdx-1, 0);
+      focusCard(groups, state.focusedIdx);
+      break;
+    case 'o': case 'Enter':
+      if(state.focusedIdx>=0 && state.focusedIdx<n) {
+        const g=groups[state.focusedIdx];
+        markRead(g.id,{});
+        window.open(naverNewsUrl(g.lead),'_blank');
+      }
+      break;
+    case 'm':
+      if(state.focusedIdx>=0 && state.focusedIdx<n) {
+        const g=groups[state.focusedIdx];
+        state.read[g.id]=!state.read[g.id];
+        savePersist(); render();
+      }
+      break;
+    case 's':
+      if(state.focusedIdx>=0 && state.focusedIdx<n) {
+        const g=groups[state.focusedIdx];
+        state.likes[g.id]=!state.likes[g.id];
+        savePersist(); render();
+      }
+      break;
+    case 'x':
+      if(state.selectMode && state.focusedIdx>=0 && state.focusedIdx<n) {
+        const g=groups[state.focusedIdx];
+        const fake={stopPropagation:()=>{},preventDefault:()=>{}};
+        toggleSelect(g.id,fake);
+      }
+      break;
+    case 'r':
+      loadNews(); break;
+    case '?':
+      toggleKbdHint(); break;
+  }
+});
+
+function focusCard(groups, idx) {
+  // 이전 포커스 제거
+  document.querySelectorAll('.news-card.focused').forEach(c=>c.classList.remove('focused'));
+  if(idx<0||idx>=groups.length) return;
+  const card=document.getElementById('card-'+groups[idx].id);
+  if(card){
+    card.classList.add('focused');
+    card.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+}
+
+// ── 기타 ──
 function escAttr(s=''){return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;')}
 
-// 모달 바깥 클릭 닫기
 document.getElementById('tagModal').addEventListener('click',function(e){
   if(e.target===this) closeTagModal();
 });
+document.getElementById('lockInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter') checkPassword();
+});
 
-// ── INIT ──────────────────────────────────────────────────────────────────
-loadNews();
+// 세션 있으면 바로 로드
+if(sessionStorage.getItem('uae_auth')==='1') loadNews();
 </script>
 </body>
 </html>
