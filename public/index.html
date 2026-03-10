@@ -146,6 +146,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   font-family:'Space Mono',monospace;box-shadow:var(--shadow)}
 .select-mode-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(0,82,204,.07)}
 
+.mark-all-btn{font-size:11px;padding:4px 12px;border-radius:5px;border:1px solid rgba(0,135,90,.3);
+  background:rgba(0,135,90,.07);color:var(--green);cursor:pointer;transition:all .2s;
+  font-family:'Space Mono',monospace;font-weight:700}
+.mark-all-btn:hover{background:rgba(0,135,90,.14);border-color:var(--green);box-shadow:0 1px 4px rgba(0,135,90,.15)}
+.mark-all-btn:active{transform:scale(.97)}
+
 .filter-notice{background:rgba(214,48,49,.05);border:1px solid rgba(214,48,49,.15);
   border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;
   color:var(--text-dim);display:flex;align-items:center;gap:8px}
@@ -488,6 +494,7 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <div class="feed-header">
       <div class="feed-title" id="feedTitle">전체 <strong id="feedCount">0</strong>건</div>
       <div class="view-controls">
+        <button class="mark-all-btn" id="markAllBtn" onclick="markAllRead()">✓ 전체 읽음</button>
         <button class="select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ 선택</button>
         <div style="display:flex;gap:3px">
           <button class="view-btn active" id="viewCard" onclick="setView('card',this)" title="카드뷰">▦</button>
@@ -1059,6 +1066,23 @@ function bulkOpenTagModal(){
   const ids=[...state.selected]; if(!ids.length) return;
   state.tagModalId='__bulk__'; state._bulkIds=ids;
   renderTagModal(); document.getElementById('tagModal').classList.add('open');
+}
+
+// ── 전체 읽음 ──
+function markAllRead() {
+  const groups = getFilteredGroups();
+  if (!groups.length) return;
+  const btn = document.getElementById('markAllBtn');
+  groups.forEach(g => { state.read[g.id] = true; });
+  savePersist();
+  // 버튼 피드백
+  btn.textContent = '✓ 완료!';
+  btn.style.background = 'rgba(0,135,90,.18)';
+  setTimeout(() => {
+    btn.textContent = '✓ 전체 읽음';
+    btn.style.background = '';
+    render();
+  }, 600);
 }
 
 // ════════════════════════════════════════
