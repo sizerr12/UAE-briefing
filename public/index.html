@@ -403,7 +403,7 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <div class="lock-icon">🇦🇪</div>
     <div class="lock-title">UAE BRIEFING</div>
     <div class="lock-sub">구글 계정으로 로그인하세요</div>
-    <button class="google-login-btn" onclick="signInWithGoogle()">
+    <button class="google-login-btn" id="googleLoginBtn">
       <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
         <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
         <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
@@ -429,12 +429,12 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
   <div class="topbar-right">
     <span class="badge-live">LIVE</span>
     <span class="last-updated" id="lastUpdated">—</span>
-    <button class="topbar-btn" onclick="toggleKbdHint()" title="단축키 보기">⌨</button>
-    <button class="topbar-btn" onclick="loadNews()">↻ 새로고침</button>
+    <button class="topbar-btn" id="kbdHintBtn" title="단축키 보기">⌨</button>
+    <button class="topbar-btn" id="refreshBtn">↻ 새로고침</button>
     <div class="user-chip" id="userChip">
       <img class="user-avatar" id="userAvatar" src="" alt="">
       <span class="user-name" id="userName"></span>
-      <button class="topbar-btn" onclick="signOut()" title="로그아웃" style="margin:0;padding:4px 8px">↩</button>
+      <button class="topbar-btn" id="signOutBtn" title="로그아웃" style="margin:0;padding:4px 8px">↩</button>
     </div>
   </div>
 </div>
@@ -488,7 +488,7 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
       <div class="keyword-list" id="keywordList"></div>
       <div class="add-row">
         <input class="add-input" id="newKeyword" placeholder="키워드 추가..." onkeydown="if(event.key==='Enter')addKeyword()">
-        <button class="add-btn" onclick="addKeyword()">+</button>
+        <button class="add-btn" id="addKeywordBtn">+</button>
       </div>
     </div>
 
@@ -498,7 +498,7 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
       <div class="filter-list" id="filterList"></div>
       <div class="add-row">
         <input class="add-input" id="newFilter" placeholder="제외할 단어..." onkeydown="if(event.key==='Enter')addFilter()">
-        <button class="add-btn" style="background:var(--red)" onclick="addFilter()">+</button>
+        <button class="add-btn" id="addFilterBtn" style="background:var(--red)">+</button>
       </div>
     </div>
 
@@ -520,15 +520,15 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <div class="feed-header">
       <div class="feed-title" id="feedTitle">전체 <strong id="feedCount">0</strong>건</div>
       <div class="view-controls">
-        <button class="mark-all-btn" id="markAllBtn" onclick="markAllRead()">✓ 전체 읽음</button>
-        <button class="select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ 선택</button>
+        <button class="mark-all-btn" id="markAllBtn" title="현재 목록 전체 읽음 처리">✓ 전체 읽음</button>
+        <button class="select-mode-btn" id="selectModeBtn">☑ 선택</button>
         <div style="display:flex;gap:3px">
-          <button class="view-btn active" id="viewCard" onclick="setView('card',this)" title="카드뷰">▦</button>
-          <button class="view-btn" id="viewCompact" onclick="setView('compact',this)" title="컴팩트뷰">☰</button>
+          <button class="view-btn active" id="viewCard" title="카드뷰">▦</button>
+          <button class="view-btn" id="viewCompact" title="컴팩트뷰">☰</button>
         </div>
         <div style="display:flex;gap:3px">
-          <div class="sort-tab active" onclick="setSort(this,'latest')">최신</div>
-          <div class="sort-tab" onclick="setSort(this,'importance')">중요도</div>
+          <div class="sort-tab active" id="sortLatest">최신</div>
+          <div class="sort-tab" id="sortImportance">중요도</div>
         </div>
       </div>
     </div>
@@ -547,9 +547,9 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <div class="modal-tags" id="modalTagList"></div>
     <div class="modal-add-row">
       <input class="modal-input" id="modalTagInput" placeholder="새 태그..." onkeydown="if(event.key==='Enter')addModalTag()">
-      <button class="modal-save-btn" onclick="addModalTag()">추가</button>
+      <button class="modal-save-btn" id="modalAddTagBtn">추가</button>
     </div>
-    <button class="modal-close-btn" onclick="closeTagModal()">완료</button>
+    <button class="modal-close-btn" id="modalCloseBtn">완료</button>
   </div>
 </div>
 
@@ -557,13 +557,13 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
 <div class="select-toolbar" id="selectToolbar">
   <span class="sel-count" id="selCount">0개</span>
   <div class="sel-divider"></div>
-  <button class="sel-btn primary" onclick="bulkMarkRead()">✓ 읽음</button>
-  <button class="sel-btn" onclick="bulkMarkUnread()">○ 안읽음</button>
-  <button class="sel-btn" onclick="bulkLike()">♥ 보관</button>
-  <button class="sel-btn" onclick="bulkOpenTagModal()">🏷 태그</button>
+  <button class="sel-btn primary" id="selReadBtn">✓ 읽음</button>
+  <button class="sel-btn" id="selUnreadBtn">○ 안읽음</button>
+  <button class="sel-btn" id="selLikeBtn">♥ 보관</button>
+  <button class="sel-btn" id="selTagBtn">🏷 태그</button>
   <div class="sel-divider"></div>
-  <button class="sel-btn danger" onclick="bulkHide()">숨기기</button>
-  <button class="sel-btn" onclick="clearSelection()">✕</button>
+  <button class="sel-btn danger" id="selHideBtn">숨기기</button>
+  <button class="sel-btn" id="selCancelBtn">✕</button>
 </div>
 
 <!-- KEYBOARD HINT -->
@@ -1295,6 +1295,28 @@ function escAttr(s=''){return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quo
 document.getElementById('tagModal').addEventListener('click',function(e){
   if(e.target===this) closeTagModal();
 });
+
+// ── 모든 버튼 이벤트 연결 ──
+document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
+document.getElementById('signOutBtn').addEventListener('click', signOut);
+document.getElementById('kbdHintBtn').addEventListener('click', toggleKbdHint);
+document.getElementById('refreshBtn').addEventListener('click', loadNews);
+document.getElementById('markAllBtn').addEventListener('click', markAllRead);
+document.getElementById('selectModeBtn').addEventListener('click', toggleSelectMode);
+document.getElementById('viewCard').addEventListener('click', function(){ setView('card',this); });
+document.getElementById('viewCompact').addEventListener('click', function(){ setView('compact',this); });
+document.getElementById('sortLatest').addEventListener('click', function(){ setSort(this,'latest'); });
+document.getElementById('sortImportance').addEventListener('click', function(){ setSort(this,'importance'); });
+document.getElementById('addKeywordBtn').addEventListener('click', addKeyword);
+document.getElementById('addFilterBtn').addEventListener('click', addFilter);
+document.getElementById('modalAddTagBtn').addEventListener('click', addModalTag);
+document.getElementById('modalCloseBtn').addEventListener('click', closeTagModal);
+document.getElementById('selReadBtn').addEventListener('click', bulkMarkRead);
+document.getElementById('selUnreadBtn').addEventListener('click', bulkMarkUnread);
+document.getElementById('selLikeBtn').addEventListener('click', bulkLike);
+document.getElementById('selTagBtn').addEventListener('click', bulkOpenTagModal);
+document.getElementById('selHideBtn').addEventListener('click', bulkHide);
+document.getElementById('selCancelBtn').addEventListener('click', clearSelection);
 </script>
 </body>
 </html>
