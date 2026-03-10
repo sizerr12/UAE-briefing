@@ -230,7 +230,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   margin-top:auto;padding-top:8px}
 .card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
 .card-link:hover{color:var(--blue)}
-.card-actions{display:flex;gap:3px;align-items:center}
+.card-actions{display:flex;gap:3px;align-items:center;
+  padding:6px 14px 8px;border-top:1px solid var(--border);
+  background:var(--surface);border-radius:0 0 12px 12px;
+  opacity:0;transition:opacity .15s}
+.news-card:hover .card-actions{opacity:1}
 .card-action-btn{font-size:11px;color:var(--text-muted);cursor:pointer;padding:3px 8px;
   border-radius:5px;border:1px solid transparent;transition:all .15s;background:none;
   font-family:'Noto Sans KR',sans-serif}
@@ -1025,17 +1029,17 @@ function renderCard(g, i) {
           ${tagChips?`<div class="bookmark-tags-on-card">${tagChips}</div>`:''}
           <div class="card-footer">
             <span class="card-link">네이버 뉴스에서 보기 →</span>
-            <div class="card-actions">
-              <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)">${isLiked?'♥':'♡'}</button>
-              <button class="card-action-btn" onclick="openTagModal('${g.id}',event)">🏷</button>
-              <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)">${isRead?'● 읽':'○ 읽'}</button>
-              <button class="card-action-btn danger" onclick="hideCard('${g.id}',event)">✕</button>
-            </div>
           </div>
         </div>
         <div class="card-thumb">${thumbHtml}</div>
       </div>
     </a>
+    <div class="card-actions">
+      <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)">${isLiked?'♥':'♡'}</button>
+      <button class="card-action-btn" onclick="openTagModal('${g.id}',event)">🏷</button>
+      <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)">${isRead?'● 읽':'○ 읽'}</button>
+      <button class="card-action-btn danger" onclick="hideCard('${g.id}',event)">✕</button>
+    </div>
     ${isGroup?`
     <div class="group-footer">
       <button class="dupe-toggle" onclick="toggleGroup('${g.id}',event)">
@@ -1317,6 +1321,19 @@ document.getElementById('selLikeBtn').addEventListener('click', bulkLike);
 document.getElementById('selTagBtn').addEventListener('click', bulkOpenTagModal);
 document.getElementById('selHideBtn').addEventListener('click', bulkHide);
 document.getElementById('selCancelBtn').addEventListener('click', clearSelection);
+
+// ── window 등록: HTML onclick="" 속성이 module scope에서도 작동하도록 ──
+Object.assign(window, {
+  setViewFilter, toggleKeyword, removeKeyword,
+  addKeyword, addFilter, removeFilter,
+  handleCardClick, toggleSelect, markRead,
+  toggleLike, openTagModal, toggleReadBtn, hideCard,
+  toggleDupe, toggleSelectMode, clearSelection,
+  bulkMarkRead, bulkMarkUnread, bulkLike, bulkHide, bulkOpenTagModal,
+  openTagModalFor, renderTagModal, closeTagModal, addModalTag, removeTagFromModal,
+  setSort, setView, setViewFilter, markAllRead,
+  toggleKbdHint, loadNews, signInWithGoogle, signOut,
+});
 </script>
 </body>
 </html>
