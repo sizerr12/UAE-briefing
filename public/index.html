@@ -11,16 +11,17 @@
     --border:#1e2530; --gold:#c8a84b; --gold-dim:#8a7035;
     --text:#e8eaf0; --text-dim:#7a8394; --text-muted:#3e4757;
     --red:#e05252; --green:#4caf7d; --blue:#4a9eff; --tag-bg:#1a2030;
+    --heart:#ff6b8a;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-  /* TOP BAR */
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
+  /* ── TOP BAR ── */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(10,12,16,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
   .logo{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.08em}
   .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),#8a6010);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
   .logo-text{color:var(--gold)} .logo-sub{color:var(--text-dim);font-size:11px}
-  .topbar-right{display:flex;align-items:center;gap:12px}
+  .topbar-right{display:flex;align-items:center;gap:10px}
   .refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Space Mono',monospace;transition:all .2s}
   .refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
   .last-updated{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
@@ -28,12 +29,12 @@
   .badge-live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  /* LAYOUT */
+  /* ── LAYOUT ── */
   .layout{display:flex;margin-top:56px;min-height:calc(100vh - 56px)}
 
-  /* SIDEBAR */
+  /* ── SIDEBAR ── */
   .sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
-  .sidebar-section{margin-bottom:28px}
+  .sidebar-section{margin-bottom:24px}
   .sidebar-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;padding:0 4px}
   .keyword-list{display:flex;flex-direction:column;gap:4px}
   .keyword-item{display:flex;align-items:center;justify-content:space-between;background:var(--tag-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer;transition:all .15s}
@@ -54,22 +55,24 @@
   .stat-num{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--gold)}
   .stat-label{font-size:11px;color:var(--text-dim);margin-top:2px}
 
-  /* MAIN */
+  /* ── TAB BAR (피드 / 보관함) ── */
+  .tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .tab-btn{padding:8px 18px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s;font-family:'Noto Sans KR',sans-serif}
+  .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .tab-btn .tab-count{font-family:'Space Mono',monospace;font-size:10px;background:rgba(200,168,75,.15);color:var(--gold);padding:1px 6px;border-radius:3px;margin-left:6px}
+
+  /* ── MAIN ── */
   .main{flex:1;padding:20px 24px;max-width:960px}
-  .feed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .feed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
   .feed-title{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase}
   .sort-tabs{display:flex;gap:4px}
   .sort-tab{font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:'Space Mono',monospace;border:1px solid transparent;color:var(--text-muted);transition:all .15s}
   .sort-tab.active{border-color:var(--border);background:var(--surface2);color:var(--text)}
-
-  /* FILTER NOTICE */
   .filter-notice{background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
 
-  /* NEWS CARDS */
+  /* ── NEWS CARDS ── */
   .news-list{display:flex;flex-direction:column;gap:10px}
-
-  /* ── 카드 공통 ── */
-  .news-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;animation:fadeUp .3s ease both;text-decoration:none;display:block;color:inherit}
+  .news-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .18s;position:relative;animation:fadeUp .3s ease both;display:block;color:inherit}
   .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border);transition:background .15s;z-index:1}
   .news-card:hover{border-color:#2a3040;background:var(--surface2)}
   .news-card:hover::before{background:var(--gold)}
@@ -77,34 +80,41 @@
   .news-card.highlight::before{background:var(--gold)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-  /* ── 카드 내부 레이아웃: 썸네일 오른쪽 ── */
-  .card-inner{display:flex;gap:0;min-height:0}
+  /* ── 카드 레이아웃 ── */
+  .card-inner{display:flex;min-height:0}
   .card-body{flex:1;padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:6px}
   .card-thumb{width:140px;flex-shrink:0;position:relative;overflow:hidden;background:var(--surface2)}
   .card-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
   .news-card:hover .card-thumb img{transform:scale(1.04)}
-  .card-thumb-placeholder{width:100%;height:100%;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--surface2)}
-  .placeholder-logo{font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);letter-spacing:.04em;text-align:center;padding:0 8px;line-height:1.4}
-  .placeholder-icon{font-size:22px;opacity:.4}
+  .card-thumb-placeholder{width:100%;height:100%;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 
-  /* ── 카드 메타 ── */
-  .card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .card-source{font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.06em;background:rgba(200,168,75,.1);padding:2px 7px;border-radius:3px}
+  /* ── 언론사 로고 ── */
+  .source-row{display:flex;align-items:center;gap:7px}
+  .source-favicon{width:14px;height:14px;border-radius:2px;object-fit:contain;flex-shrink:0;opacity:.85}
+  .source-favicon-fallback{width:14px;height:14px;border-radius:2px;background:var(--gold-dim);display:inline-flex;align-items:center;justify-content:center;font-size:7px;color:var(--bg);font-weight:700;flex-shrink:0;font-family:'Space Mono',monospace}
+  .card-source{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.04em;font-weight:700}
   .card-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
-  .card-tags{display:flex;gap:4px;flex-wrap:wrap}
+
+  .card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
   .card-tag{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--tag-bg);color:var(--text-dim);border:1px solid var(--border)}
   .card-tag.dubai{color:#4a9eff;border-color:rgba(74,158,255,.25);background:rgba(74,158,255,.07)}
   .card-tag.abudhabi{color:#a78bfa;border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.07)}
   .card-tag.uae{color:var(--gold);border-color:rgba(200,168,75,.25);background:rgba(200,168,75,.07)}
-  .card-tag.economy{color:var(--green);border-color:rgba(76,175,125,.25);background:rgba(76,175,125,.07)}
   .card-title{font-size:14px;font-weight:600;line-height:1.5;color:var(--text)}
   .card-desc{font-size:12px;color:var(--text-dim);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:8px}
   .card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);text-decoration:none}
-  .card-actions{display:flex;gap:6px}
-  .card-action-btn{font-size:11px;color:var(--text-muted);cursor:pointer;padding:2px 8px;border-radius:4px;border:1px solid transparent;transition:all .15s;background:none}
+  .card-actions{display:flex;gap:4px;align-items:center}
+  .card-action-btn{font-size:11px;color:var(--text-muted);cursor:pointer;padding:3px 8px;border-radius:4px;border:1px solid transparent;transition:all .15s;background:none;font-family:'Noto Sans KR',sans-serif}
   .card-action-btn:hover{border-color:var(--border);color:var(--text)}
   .card-action-btn.hide:hover{color:var(--red);border-color:rgba(224,82,82,.3)}
+
+  /* ── 하트 버튼 ── */
+  .heart-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:3px 6px;border-radius:4px;transition:all .15s;line-height:1;color:var(--text-muted)}
+  .heart-btn:hover{color:var(--heart);transform:scale(1.2)}
+  .heart-btn.liked{color:var(--heart);animation:heartPop .25s ease}
+  @keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
 
   /* ── 독창성 배지 ── */
   .orig-badge{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:3px;text-transform:uppercase}
@@ -114,35 +124,101 @@
   /* ── 그룹 카드 ── */
   .group-card{padding-bottom:0}
   .group-lead-link{display:block;text-decoration:none;color:inherit}
-  .dupe-toggle{background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);font-family:'Noto Sans KR',sans-serif;padding:0;text-align:left;transition:color .15s;max-width:380px;line-height:1.5}
+  .dupe-toggle{background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);font-family:'Noto Sans KR',sans-serif;padding:0;text-align:left;transition:color .15s;line-height:1.5}
   .dupe-toggle:hover{color:var(--text-dim)}
-  .group-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 12px}
+  .group-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px}
   .dupe-list{border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
   .dupe-item{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(30,37,48,.6);text-decoration:none;color:inherit;transition:background .1s}
   .dupe-item:last-child{border-bottom:none}
   .dupe-item:hover{background:rgba(255,255,255,.02)}
-  .dupe-source{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap;min-width:70px}
+  .dupe-src-wrap{display:flex;align-items:center;gap:5px;min-width:90px}
+  .dupe-favicon{width:12px;height:12px;border-radius:2px;object-fit:contain;opacity:.7}
+  .dupe-source{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap}
   .dupe-title{font-size:12px;color:var(--text-dim);flex:1;line-height:1.4;transition:color .15s}
   .dupe-item:hover .dupe-title{color:var(--text)}
   .dupe-time{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap}
 
-  /* ── 로딩 ── */
+  /* ── 태그 모달 ── */
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .modal-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px}
+  .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:32px}
+  .modal-tag{font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--tag-bg);color:var(--text-dim);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+  .modal-tag:hover{border-color:var(--gold-dim);color:var(--text)}
+  .modal-tag.selected{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
+  .modal-tag .tag-remove{font-size:14px;color:var(--red);opacity:.6;cursor:pointer}
+  .modal-tag .tag-remove:hover{opacity:1}
+  .modal-add-row{display:flex;gap:8px;margin-bottom:16px}
+  .modal-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none}
+  .modal-input:focus{border-color:var(--gold-dim)}
+  .modal-save-btn{background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:700}
+  .modal-close-btn{width:100%;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;cursor:pointer}
+
+  /* ── 보관함 ── */
+  .bookmarks-empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px}
+  .bookmark-tag-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+  .btag-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--tag-bg);color:var(--text-dim);cursor:pointer;transition:all .15s}
+  .btag-btn.active{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
+  .bookmark-tags-on-card{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+  .btag-chip{font-size:10px;padding:1px 7px;border-radius:10px;background:rgba(200,168,75,.12);color:var(--gold);border:1px solid rgba(200,168,75,.2)}
+
+  /* ── 로딩 / 빈 화면 ── */
   .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px}
   .loading-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)}
   .empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px}
 
-  /* ── API 설정 배너 ── */
-  .api-banner{background:rgba(200,168,75,.07);border:1px solid rgba(200,168,75,.2);border-radius:10px;padding:20px 24px;margin-bottom:16px}
-  .api-banner h3{color:var(--gold);font-size:14px;margin-bottom:10px}
-  .api-banner p{font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:10px}
-  .api-key-row{display:flex;gap:8px;margin-bottom:8px}
-  .api-key-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:12px;font-family:'Space Mono',monospace;outline:none}
-  .api-key-input:focus{border-color:var(--gold-dim)}
-  .api-save-btn{background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;font-weight:700;white-space:nowrap}
-  .api-demo-btn{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer}
-  .api-demo-btn:hover{border-color:var(--border);color:var(--text)}
+  /* ── 읽음 / 안읽음 ── */
+  .news-card.read{opacity:.45;filter:saturate(.3)}
+  .news-card.read .card-title{color:var(--text-dim)}
+  .news-card.read:hover{opacity:.75;filter:saturate(.6)}
+  .read-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;box-shadow:0 0 5px var(--blue);transition:all .2s}
+  .news-card.read .read-dot{background:var(--text-muted);box-shadow:none}
+
+  /* ── 체크박스 선택 ── */
+  .news-card{position:relative}
+  .card-checkbox{position:absolute;top:12px;left:12px;z-index:10;
+    width:18px;height:18px;border-radius:4px;border:2px solid var(--border);
+    background:var(--surface2);cursor:pointer;display:none;
+    transition:all .15s;appearance:none;-webkit-appearance:none}
+  .card-checkbox:checked{background:var(--blue);border-color:var(--blue);
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size:10px;background-repeat:no-repeat;background-position:center}
+  .select-mode .card-checkbox{display:block}
+  .select-mode .news-card{padding-left:4px}
+  .select-mode .news-card.selected{border-color:rgba(74,158,255,.5);background:rgba(74,158,255,.05)}
+  .select-mode .news-card.selected::before{background:var(--blue)}
+
+  /* ── 선택 툴바 ── */
+  .select-toolbar{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:10px 16px;
+    display:none;align-items:center;gap:10px;z-index:150;
+    box-shadow:0 8px 32px rgba(0,0,0,.5);backdrop-filter:blur(8px);
+    animation:slideUp .2s ease;white-space:nowrap
+  }
+  .select-toolbar.visible{display:flex}
+  @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  .sel-count{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);
+    background:rgba(200,168,75,.12);padding:3px 10px;border-radius:20px}
+  .sel-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface2);color:var(--text-dim);cursor:pointer;transition:all .15s;
+    font-family:'Noto Sans KR',sans-serif}
+  .sel-btn:hover{color:var(--text);border-color:#3a4557}
+  .sel-btn.danger:hover{color:var(--red);border-color:rgba(224,82,82,.4)}
+  .sel-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .sel-btn.primary:hover{opacity:.85}
+  .sel-divider{width:1px;height:20px;background:var(--border)}
+
+  /* ── 선택모드 토글 버튼 ── */
+  .select-mode-btn{font-size:11px;padding:4px 12px;border-radius:6px;
+    border:1px solid var(--border);background:var(--surface2);
+    color:var(--text-muted);cursor:pointer;transition:all .15s;
+    font-family:'Space Mono',monospace}
+  .select-mode-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.08)}
 
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:transparent}
@@ -151,22 +227,23 @@
 </head>
 <body>
 
+<!-- TOP BAR -->
 <div class="topbar">
   <div class="logo">
     <div class="logo-icon">🇦🇪</div>
-    <div>
-      <div class="logo-text">UAE BRIEFING</div>
-      <div class="logo-sub">두바이 · 아부다비 · UAE</div>
-    </div>
+    <div><div class="logo-text">UAE BRIEFING</div><div class="logo-sub">두바이 · 아부다비 · UAE</div></div>
   </div>
   <div class="topbar-right">
-    <span class="badge-live" id="livebadge" style="display:none">LIVE</span>
+    <span class="badge-live">LIVE</span>
     <span class="last-updated" id="lastUpdated">—</span>
     <button class="refresh-btn" onclick="loadNews()">↻ 새로고침</button>
   </div>
 </div>
 
+<!-- LAYOUT -->
 <div class="layout">
+
+  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">📡 검색 키워드</div>
@@ -195,335 +272,590 @@
     </div>
   </div>
 
+  <!-- MAIN -->
   <div class="main">
     <div class="feed-header">
-      <div class="feed-title">뉴스 피드</div>
-      <div class="sort-tabs">
-        <div class="sort-tab active" onclick="setSort(this,'latest')">최신순</div>
-        <div class="sort-tab" onclick="setSort(this,'group')">묶음순</div>
+      <div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ 선택</button>
+        <div class="sort-tabs">
+          <div class="sort-tab active" onclick="setSort(this,'latest')">최신순</div>
+          <div class="sort-tab" onclick="setSort(this,'group')">묶음순</div>
+        </div>
       </div>
     </div>
+
+    <!-- 탭 바 -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(this,'feed')">📰 뉴스 피드</button>
+      <button class="tab-btn" onclick="switchTab(this,'bookmarks')">♥ 보관함 <span class="tab-count" id="bookmarkCount">0</span></button>
+    </div>
+
     <div id="filterNotice" class="filter-notice" style="display:none"></div>
     <div class="news-list" id="newsList">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">뉴스 불러오는 중...</div>
-      </div>
+      <div class="loading"><div class="loading-spinner"></div><div class="loading-text">뉴스 불러오는 중...</div></div>
     </div>
   </div>
 </div>
 
+<!-- 태그 모달 -->
+<div class="modal-overlay" id="tagModal">
+  <div class="modal">
+    <div class="modal-title">🏷 태그 달기</div>
+    <div class="modal-tags" id="modalTagList"></div>
+    <div class="modal-add-row">
+      <input class="modal-input" id="modalTagInput" placeholder="새 태그 입력..." onkeydown="if(event.key==='Enter')addModalTag()">
+      <button class="modal-save-btn" onclick="addModalTag()">추가</button>
+    </div>
+    <button class="modal-close-btn" onclick="closeTagModal()">완료</button>
+  </div>
+</div>
+
+<!-- 선택 툴바 -->
+<div class="select-toolbar" id="selectToolbar">
+  <span class="sel-count" id="selCount">0개 선택</span>
+  <div class="sel-divider"></div>
+  <button class="sel-btn primary" onclick="bulkMarkRead()">✓ 읽음</button>
+  <button class="sel-btn" onclick="bulkMarkUnread()">○ 안읽음</button>
+  <button class="sel-btn" onclick="bulkLike()">♥ 보관</button>
+  <button class="sel-btn" onclick="bulkOpenTagModal()">🏷 태그</button>
+  <div class="sel-divider"></div>
+  <button class="sel-btn danger" onclick="bulkHide()">숨기기</button>
+  <button class="sel-btn" onclick="clearSelection()">✕ 취소</button>
+</div>
+
 <script>
-// ── CONFIG ─────────────────────────────────────────────────────────────────
-// Vercel 배포 후 자동으로 /api/news 를 호출합니다.
-// 로컬 테스트 시: DEMO_MODE = true 로 샘플 데이터를 씁니다.
-const API_BASE   = '/api/news';
-const DEMO_MODE  = !window.location.hostname.includes('vercel.app')
-                && !window.location.hostname.includes('localhost');
+// ── HTML 엔티티 디코딩 ────────────────────────────────────────────────────
+function decodeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&')
+    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ')
+    .replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(n))
+    .replace(/<[^>]+>/g,''); // strip any leftover tags
+}
 
-// ── STATE ──────────────────────────────────────────────────────────────────
-let state = {
-  keywords: ['두바이','아부다비','UAE'],
-  filters:  ['축구','스포츠','골프'],
-  activeKeyword: null,
-  sort: 'latest',
-  hidden: new Set(),
-  expandedGroups: new Set(),
-  data: null   // last API response
+// ── 네이버 인뉴스 URL 변환 ────────────────────────────────────────────────
+// 네이버 API가 돌려주는 originallink / link 중 news.naver.com 형태 우선 사용
+// api/news.js 에서 naverLink 필드를 함께 보내줌
+function naverNewsUrl(item) {
+  // item.naverLink 는 news.naver.com/... 형태 (api에서 주입)
+  if (item.naverLink) return item.naverLink;
+  // fallback: 네이버 검색으로
+  return `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(item.title||'')}`;
+}
+
+// ── 언론사 favicon URL ─────────────────────────────────────────────────────
+const SOURCE_DISPLAY = {
+  'chosun.com':'조선일보','donga.com':'동아일보','joongang.co.kr':'중앙일보',
+  'hani.co.kr':'한겨레','khan.co.kr':'경향신문','mk.co.kr':'매일경제',
+  'hankyung.com':'한국경제','sedaily.com':'서울경제','asiae.co.kr':'아시아경제',
+  'mt.co.kr':'머니투데이','newsis.com':'뉴시스','news1.kr':'뉴스1',
+  'yna.co.kr':'연합뉴스','yonhapnewstv.co.kr':'연합뉴스TV','ytn.co.kr':'YTN',
+  'kbs.co.kr':'KBS','mbc.co.kr':'MBC','sbs.co.kr':'SBS',
+  'jtbc.co.kr':'JTBC','tvchosun.com':'TV조선','mbn.co.kr':'MBN',
+  'biz.chosun.com':'조선비즈','economist.co.kr':'이코노미스트',
 };
+function sourceDisplay(domain) {
+  if (!domain) return '';
+  const clean = domain.replace(/^www\./,'');
+  return SOURCE_DISPLAY[clean] || clean.replace(/\.(co\.kr|com|kr|net)$/,'').split('.').slice(-1)[0];
+}
+function faviconUrl(domain) {
+  if (!domain) return null;
+  return `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+}
+function sourceFaviconHtml(domain, size=14) {
+  const disp = sourceDisplay(domain);
+  const initial = disp ? disp.slice(0,1) : '?';
+  return `<img class="source-favicon" width="${size}" height="${size}"
+    src="${faviconUrl(domain)}"
+    onerror="this.outerHTML='<span class=\\'source-favicon-fallback\\'>${initial}</span>'"
+    alt="${disp}">`;
+}
 
-// ── DEMO DATA ──────────────────────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const API_BASE  = '/api/news';
+const DEMO_MODE = !window.location.hostname.includes('vercel.app')
+               && !window.location.hostname.includes('localhost');
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let state = {
+  keywords:['두바이','아부다비','UAE'],
+  filters:['축구','스포츠','골프'],
+  activeKeyword:null, sort:'latest',
+  hidden:new Set(), expandedGroups:new Set(),
+  data:null, activeTab:'feed',
+  likes: JSON.parse(localStorage.getItem('uae_likes')||'{}'),
+  tags:  JSON.parse(localStorage.getItem('uae_tags')||'{}'),
+  allTags: JSON.parse(localStorage.getItem('uae_allTags')||'["경제","비자","부동산","항공","외교"]'),
+  activeBookmarkTag: null,
+  tagModalId: null,
+  // 읽음 상태
+  read: JSON.parse(localStorage.getItem('uae_read')||'{}'),
+  // 선택 모드
+  selectMode: false,
+  selected: new Set(),
+};
+function savePersist() {
+  localStorage.setItem('uae_likes', JSON.stringify(state.likes));
+  localStorage.setItem('uae_tags',  JSON.stringify(state.tags));
+  localStorage.setItem('uae_allTags', JSON.stringify(state.allTags));
+  localStorage.setItem('uae_read',  JSON.stringify(state.read));
+}
+
+// ── DEMO DATA ─────────────────────────────────────────────────────────────
 const DEMO = {
   groups:[
-    { id:'g0', lead:{ title:'[단독] 아부다비 ADNOC, 한국 조선사에 LNG선 10척 발주… 25억 달러',
+    { id:'g0', lead:{
+        title:'[단독] 아부다비 ADNOC, 한국 조선사에 LNG선 10척 발주… 25억 달러',
         description:'아부다비 국영석유회사 ADNOC이 HD현대와 삼성중공업에 LNG운반선 10척을 발주했다. 총 계약금액 25억 달러로 국내 조선업 역대 단일 최대 중동 수주다. 본지가 단독으로 계약서 내용을 입수해 세부 조건을 확인했다.',
         source:'chosun.com', time:'10분 전', keyword:'아부다비', originality:'exclusive',
-        link:'https://search.naver.com/search.naver?where=news&query=ADNOC+LNG+조선',
-        thumbnail:'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=280&q=80' },
+        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=101',
+        thumbnail:'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=280&q=80'},
       others:[
-        { title:'ADNOC, 한국 HD현대·삼성중공업과 LNG선 계약', source:'yna.co.kr', time:'35분 전', link:'https://search.naver.com/search.naver?where=news&query=ADNOC+LNG' },
-        { title:'삼성중공업·HD현대, 아부다비서 LNG선 수주 쾌거', source:'hankyung.com', time:'50분 전', link:'https://search.naver.com/search.naver?where=news&query=삼성중공업+ADNOC' },
-        { title:'K-조선, 중동서 또 대박… ADNOC 25억弗 수주', source:'mk.co.kr', time:'1시간 전', link:'https://search.naver.com/search.naver?where=news&query=K조선+ADNOC' },
-      ]
-    },
-    { id:'g1', lead:{ title:'\'두바이로 가는 한국 프리랜서들\'… UAE 신비자, 실제로 써봤더니',
+        {title:'ADNOC, 한국 HD현대·삼성중공업과 LNG선 계약', source:'yna.co.kr', time:'35분 전', naverLink:'https://news.naver.com/'},
+        {title:'삼성중공업·HD현대, 아부다비서 LNG선 수주 쾌거', source:'hankyung.com', time:'50분 전', naverLink:'https://news.naver.com/'},
+        {title:'K-조선, 중동서 또 대박… ADNOC 25억弗 수주', source:'mk.co.kr', time:'1시간 전', naverLink:'https://news.naver.com/'},
+      ]},
+    { id:'g1', lead:{
+        title:'&quot;두바이로 가는 한국 프리랜서들&quot;… UAE 신비자, 실제로 써봤더니',
         description:'UAE 장기비자 제도를 실제 취득한 한국인 4명을 인터뷰했다. 서류 준비부터 거주증 발급까지 4주 소요됐고 예상보다 까다로운 소득 증빙이 걸림돌이었다. 전문가들은 세금·연금 공백 문제도 꼼꼼히 살펴야 한다고 조언한다.',
         source:'hani.co.kr', time:'45분 전', keyword:'UAE', originality:'original',
-        link:'https://search.naver.com/search.naver?where=news&query=UAE+비자+프리랜서',
-        thumbnail:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=280&q=80' },
+        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=102',
+        thumbnail:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=280&q=80'},
       others:[
-        { title:'UAE 비자 전면 개편… 프리랜서·유튜버도 5년 장기비자', source:'sedaily.com', time:'20분 전', link:'https://search.naver.com/search.naver?where=news&query=UAE+비자+개편' },
-        { title:'UAE, 디지털노마드 비자 요건 완화… 한국인 신청 늘 듯', source:'newsis.com', time:'1시간 30분 전', link:'https://search.naver.com/search.naver?where=news&query=UAE+디지털노마드+비자' },
-      ]
-    },
-    { id:'g2', lead:{ title:'에미레이트항공, 인천 노선 증편 신청… 주 21→28편',
+        {title:'UAE 비자 전면 개편… 프리랜서·유튜버도 5년 장기비자', source:'sedaily.com', time:'20분 전', naverLink:'https://news.naver.com/'},
+        {title:'UAE, 디지털노마드 비자 요건 완화… 한국인 신청 늘 듯', source:'newsis.com', time:'1시간 30분 전', naverLink:'https://news.naver.com/'},
+      ]},
+    { id:'g2', lead:{
+        title:'에미레이트항공, 인천 노선 증편 신청… 주 21→28편',
         description:'에미레이트항공이 인천-두바이 노선을 주 28편으로 늘려달라고 국토부에 공식 요청했다. 한국 노선 수요가 급증해 현재 좌석이 부족한 상황이다. 슬롯 협의가 타결되면 내년 하계 스케줄부터 반영된다.',
-        source:'yonhapnewstv.co.kr', time:'30분 전', keyword:'UAE', originality:'pr',
-        link:'https://search.naver.com/search.naver?where=news&query=에미레이트항공+인천+증편',
-        thumbnail:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=80' },
+        source:'ytn.co.kr', time:'30분 전', keyword:'UAE', originality:'pr',
+        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=103',
+        thumbnail:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=80'},
       others:[
-        { title:'에미레이트항공 인천 노선 증편 추진… 슬롯 확보가 관건', source:'biz.chosun.com', time:'55분 전', link:'https://search.naver.com/search.naver?where=news&query=에미레이트+인천+슬롯' },
-        { title:'두바이~인천, 에미레이트 하루 4편 시대 열리나', source:'asiae.co.kr', time:'1시간 10분 전', link:'https://search.naver.com/search.naver?where=news&query=두바이+인천+에미레이트' },
-        { title:'항공편 늘리면 두바이 여행 더 싸질까… 소비자 기대감', source:'mt.co.kr', time:'1시간 40분 전', link:'https://search.naver.com/search.naver?where=news&query=에미레이트+증편+두바이여행' },
-      ]
-    },
-    { id:'g3', lead:{ title:'두바이 엑스포시티, 한국 스타트업 전용 허브 조성 협약',
+        {title:'에미레이트항공 인천 노선 증편 추진… 슬롯 확보가 관건', source:'biz.chosun.com', time:'55분 전', naverLink:'https://news.naver.com/'},
+        {title:'두바이~인천, 에미레이트 하루 4편 시대 열리나', source:'asiae.co.kr', time:'1시간 10분 전', naverLink:'https://news.naver.com/'},
+        {title:'항공편 늘리면 두바이 여행 더 싸질까… 소비자 기대감', source:'mt.co.kr', time:'1시간 40분 전', naverLink:'https://news.naver.com/'},
+      ]},
+    { id:'g3', lead:{
+        title:'두바이 엑스포시티, 한국 스타트업 전용 허브 조성 협약',
         description:'두바이 엑스포시티가 코트라와 협력해 한국 스타트업 전용 허브를 조성한다. 연간 30개 기업을 지원하며 초기 입주 비용의 70%를 보조한다. 협약식은 현지에서 코트라 두바이 무역관장과 엑스포시티 CEO가 서명했다.',
         source:'mk.co.kr', time:'5분 전', keyword:'두바이', originality:'original',
-        link:'https://search.naver.com/search.naver?where=news&query=두바이+엑스포시티+스타트업',
-        thumbnail:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=280&q=80' },
-      others:[]
-    },
-    { id:'g4', lead:{ title:'아부다비 루브르 박물관, 한국 특별전 2026년 봄 개최 확정',
+        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=104',
+        thumbnail:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=280&q=80'},
+      others:[]},
+    { id:'g4', lead:{
+        title:'아부다비 루브르 박물관, 한국 특별전 2026년 봄 개최 확정',
         description:'아부다비 루브르 박물관이 2026년 봄 \'한국: 전통과 혁신\' 특별전을 연다. 국립중앙박물관과 공동 기획으로 200여 점이 전시된다. 삼국시대 유물부터 현대 미디어아트까지 아우르는 대규모 기획이다.',
         source:'hani.co.kr', time:'3시간 전', keyword:'아부다비', originality:'original',
-        link:'https://search.naver.com/search.naver?where=news&query=아부다비+루브르+한국특별전',
-        thumbnail:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=280&q=80' },
-      others:[]
-    },
-    { id:'g5', lead:{ title:'두바이 부동산 3년 연속 두 자릿수 상승… 한인 \'묻지마 투자\' 경고',
+        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=105',
+        thumbnail:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=280&q=80'},
+      others:[]},
+    { id:'g5', lead:{
+        title:'두바이 부동산 3년 연속 두 자릿수 상승… 한인 \'묻지마 투자\' 경고',
         description:'두바이 부동산 가격이 3년 연속 두 자릿수 상승하며 과열 우려가 커지고 있다. 전문가들은 한국 투자자들에게 신중한 접근을 당부한다. 일부 단지는 분양가 대비 40% 이상 프리미엄이 붙어 거래 중이다.',
         source:'news1.kr', time:'1시간 25분 전', keyword:'두바이', originality:'original',
-        link:'https://search.naver.com/search.naver?where=news&query=두바이+부동산+과열',
-        thumbnail:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=280&q=80' },
-      others:[]
-    },
+        naverLink:'https://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=106',
+        thumbnail:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=280&q=80'},
+      others:[]},
   ],
-  filteredCount:2,
-  filteredReasons:['축구'],
-  total:17,
+  filteredCount:2, filteredReasons:['축구'], total:17,
   fetchedAt: new Date().toISOString()
 };
 
-// ── API CALL ───────────────────────────────────────────────────────────────
+// ── API ───────────────────────────────────────────────────────────────────
 async function loadNews() {
   const btn = document.querySelector('.refresh-btn');
   btn.textContent = '↻ 불러오는 중...';
-  document.getElementById('newsList').innerHTML =
-    `<div class="loading"><div class="loading-spinner"></div><div class="loading-text">뉴스 불러오는 중...</div></div>`;
-
+  if (state.activeTab === 'feed')
+    document.getElementById('newsList').innerHTML =
+      `<div class="loading"><div class="loading-spinner"></div><div class="loading-text">뉴스 불러오는 중...</div></div>`;
   try {
     let data;
-    if (DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 900)); // 로딩 느낌
-      data = DEMO;
-    } else {
-      const params = new URLSearchParams({
-        keywords: state.keywords.join(','),
-        filters:  state.filters.join(',')
-      });
-      const res = await fetch(`${API_BASE}?${params}`);
-      if (!res.ok) throw new Error(await res.text());
+    if (DEMO_MODE) { await new Promise(r=>setTimeout(r,800)); data=DEMO; }
+    else {
+      const p = new URLSearchParams({keywords:state.keywords.join(','), filters:state.filters.join(',')});
+      const res = await fetch(`${API_BASE}?${p}`);
+      if (!res.ok) throw new Error();
       data = await res.json();
     }
     state.data = data;
     const d = new Date(data.fetchedAt);
     document.getElementById('lastUpdated').textContent =
       `업데이트 ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-    document.getElementById('livebage') && (document.getElementById('livebage').style.display='');
-    document.getElementById('livebage') || (document.getElementById('livebage') && (document.getElementById('livebage').style.display='inline-flex'));
-  } catch(e) {
-    state.data = DEMO; // fallback
-    console.warn('API 오류, 데모 데이터 사용:', e);
-  }
-
+  } catch(e) { state.data = DEMO; }
   btn.textContent = '↻ 새로고침';
   render();
 }
 
-// ── RENDER ─────────────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────
 function render() {
-  renderKeywords();
-  renderFilters();
-  renderFeed();
-  renderStats();
+  renderKeywords(); renderFilters(); renderStats();
+  updateBookmarkCount();
+  if (state.activeTab==='feed') renderFeed();
+  else renderBookmarks();
 }
 
 function renderKeywords() {
-  const data = state.data;
-  const counts = {};
-  if (data) {
-    data.groups.forEach(g => {
-      const kw = g.lead.keyword;
-      counts[kw] = (counts[kw]||0) + 1 + g.others.length;
-    });
-  }
-  document.getElementById('keywordList').innerHTML = state.keywords.map(kw => `
+  const data = state.data; const counts = {};
+  if (data) data.groups.forEach(g=>{const k=g.lead.keyword; counts[k]=(counts[k]||0)+1+g.others.length;});
+  document.getElementById('keywordList').innerHTML = state.keywords.map(kw=>`
     <div class="keyword-item ${state.activeKeyword===kw?'active':''}" onclick="toggleKeyword('${kw}')">
-      <span>${kw}</span>
-      <span class="keyword-count">${counts[kw]||0}</span>
+      <span>${kw}</span><span class="keyword-count">${counts[kw]||0}</span>
     </div>`).join('');
 }
-
 function renderFilters() {
-  document.getElementById('filterList').innerHTML = state.filters.map(f => `
-    <div class="filter-item">
-      <span>${f}</span>
+  document.getElementById('filterList').innerHTML = state.filters.map(f=>`
+    <div class="filter-item"><span>${f}</span>
       <span class="filter-remove" onclick="removeFilter('${f}')">×</span>
     </div>`).join('');
 }
 
 function renderFeed() {
-  const list   = document.getElementById('newsList');
-  const notice = document.getElementById('filterNotice');
-  const data   = state.data;
-  if (!data) return;
-
-  // filter notice
-  if (data.filteredCount > 0) {
-    notice.style.display = 'flex';
-    notice.innerHTML = `🚫 제외 키워드(${data.filteredReasons.join(', ')})로 <strong style="color:var(--red);margin:0 3px">${data.filteredCount}건</strong> 필터링됨`;
-  } else { notice.style.display = 'none'; }
-
-  let groups = data.groups.filter(g => !state.hidden.has(g.id));
-  if (state.activeKeyword) groups = groups.filter(g => g.lead.keyword === state.activeKeyword);
-
-  if (groups.length === 0) { list.innerHTML = `<div class="empty">조건에 맞는 뉴스가 없습니다</div>`; return; }
-
-  list.innerHTML = groups.map((g, i) => renderCard(g, i)).join('');
+  const list=document.getElementById('newsList'), notice=document.getElementById('filterNotice');
+  const data=state.data; if(!data) return;
+  if (data.filteredCount>0) {
+    notice.style.display='flex';
+    notice.innerHTML=`🚫 제외 키워드(${data.filteredReasons.join(', ')})로 <strong style="color:var(--red);margin:0 3px">${data.filteredCount}건</strong> 필터링됨`;
+  } else notice.style.display='none';
+  let groups = data.groups.filter(g=>!state.hidden.has(g.id));
+  if (state.activeKeyword) groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
+  if (!groups.length) { list.innerHTML=`<div class="empty">조건에 맞는 뉴스가 없습니다</div>`; return; }
+  list.innerHTML = groups.map((g,i)=>renderCard(g,i)).join('');
 }
 
-function renderCard(g, i) {
+function renderBookmarks() {
+  const list=document.getElementById('newsList');
+  document.getElementById('filterNotice').style.display='none';
+  const likedIds = Object.keys(state.likes).filter(id=>state.likes[id]);
+  if (!likedIds.length) { list.innerHTML=`<div class="bookmarks-empty">♥ 좋아요 누른 기사가 없어요<br><span style="font-size:11px;margin-top:8px;display:block">기사 카드의 ♡ 버튼을 눌러보세요</span></div>`; return; }
+  const allGroups = state.data?.groups||[];
+  let saved = allGroups.filter(g=>likedIds.includes(g.id));
+
+  // 태그 필터
+  const allBTags = [...new Set(likedIds.flatMap(id=>state.tags[id]||[]))];
+  const tagFilterHtml = allBTags.length ? `<div class="bookmark-tag-filter">
+    <button class="btag-btn ${!state.activeBookmarkTag?'active':''}" onclick="setBookmarkTag(null)">전체</button>
+    ${allBTags.map(t=>`<button class="btag-btn ${state.activeBookmarkTag===t?'active':''}" onclick="setBookmarkTag('${t}')">${t}</button>`).join('')}
+  </div>` : '';
+
+  if (state.activeBookmarkTag) saved=saved.filter(g=>(state.tags[g.id]||[]).includes(state.activeBookmarkTag));
+  if (!saved.length) { list.innerHTML=tagFilterHtml+`<div class="empty">해당 태그 기사가 없습니다</div>`; return; }
+  list.innerHTML = tagFilterHtml + saved.map((g,i)=>renderCard(g,i,true)).join('');
+}
+
+function renderCard(g, i, isBookmark=false) {
   const lead = g.lead;
-  const isGroup = g.others.length > 0;
+  const isGroup = g.others.length>0;
   const isExpanded = state.expandedGroups.has(g.id);
-  const highlight = lead.originality === 'exclusive' || lead.originality === 'original';
-  const badge = lead.originality === 'exclusive'
+  const isLiked = !!state.likes[g.id];
+  const isRead  = !!state.read[g.id];
+  const isSelected = state.selected.has(g.id);
+  const cardTags = state.tags[g.id]||[];
+  const highlight = lead.originality==='exclusive'||lead.originality==='original';
+
+  const badge = lead.originality==='exclusive'
     ? `<span class="orig-badge exclusive">단독</span>`
-    : lead.originality === 'original'
-    ? `<span class="orig-badge original">심층</span>`
-    : '';
+    : lead.originality==='original' ? `<span class="orig-badge original">심층</span>` : '';
+
+  const title = decodeHtml(lead.title).replace(/^\[단독\]\s*/,'');
+  const desc  = decodeHtml(lead.description);
+  const href  = naverNewsUrl(lead);
+  const srcDisp = sourceDisplay(lead.source);
 
   const thumbHtml = lead.thumbnail
-    ? `<img src="${lead.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=fallbackThumb('${escHtml(lead.source)}')">`
+    ? `<img src="${lead.thumbnail}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML=fallbackThumb('${lead.source}')">`
     : fallbackThumb(lead.source);
 
-  const dupeRows = g.others.map(n => `
-    <a class="dupe-item" href="${n.link}" target="_blank" rel="noopener noreferrer">
-      <span class="dupe-source">${escHtml(n.source)}</span>
-      <span class="dupe-title">${escHtml(n.title)}</span>
+  const dupeRows = g.others.map(n=>{
+    const dHref = naverNewsUrl(n);
+    const dDisp = sourceDisplay(n.source);
+    return `<a class="dupe-item" href="${dHref}" target="_blank" rel="noopener noreferrer">
+      <div class="dupe-src-wrap">
+        <img class="dupe-favicon" src="${faviconUrl(n.source)}" onerror="this.style.display='none'" alt="">
+        <span class="dupe-source">${dDisp}</span>
+      </div>
+      <span class="dupe-title">${decodeHtml(n.title)}</span>
       <span class="dupe-time">${n.time||''}</span>
-    </a>`).join('');
+    </a>`;
+  }).join('');
 
-  const otherSources = g.others.map(n=>n.source).join(', ');
+  const otherSources = g.others.map(n=>sourceDisplay(n.source)).join(', ');
+  const tagChips = cardTags.map(t=>`<span class="btag-chip">${t}</span>`).join('');
 
   return `
-  <div class="news-card ${isGroup?'group-card':''} ${highlight?'highlight':''}" style="animation-delay:${i*40}ms" id="card-${g.id}">
-    <a class="group-lead-link" href="${lead.link}" target="_blank" rel="noopener noreferrer">
+  <div class="news-card ${isGroup?'group-card':''} ${highlight?'highlight':''} ${isRead?'read':''} ${isSelected?'selected':''}"
+       style="animation-delay:${i*40}ms" id="card-${g.id}"
+       onclick="handleCardClick('${g.id}',event)">
+    <input type="checkbox" class="card-checkbox" ${isSelected?'checked':''} onclick="toggleSelect('${g.id}',event)">
+    <a class="group-lead-link" href="${href}" target="_blank" rel="noopener noreferrer"
+       onclick="markRead('${g.id}',event)">
       <div class="card-inner">
         <div class="card-body">
           <div class="card-meta">
+            <span class="read-dot" title="${isRead?'읽음':'안읽음'}"></span>
             ${badge}
-            <span class="card-source">${escHtml(lead.source)}</span>
-            <span class="card-time">${lead.time||pubDateToRelative(lead.pubDate)}</span>
+            <div class="source-row">
+              ${sourceFaviconHtml(lead.source)}
+              <span class="card-source">${srcDisp}</span>
+            </div>
+            <span class="card-time">${lead.time||''}</span>
             <div class="card-tags">${tagsFor(lead.keyword)}</div>
           </div>
-          <div class="card-title">${escHtml(lead.title.replace(/\[단독\]\s*/,''))}</div>
-          <div class="card-desc">${escHtml(lead.description)}</div>
+          <div class="card-title">${title}</div>
+          <div class="card-desc">${desc}</div>
+          ${tagChips ? `<div class="bookmark-tags-on-card">${tagChips}</div>` : ''}
           <div class="card-footer">
             <span class="card-link">네이버 뉴스에서 보기 →</span>
+            <div class="card-actions">
+              <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)" title="보관함에 저장">${isLiked?'♥':'♡'}</button>
+              <button class="card-action-btn" onclick="openTagModal('${g.id}',event)" title="태그 달기">🏷</button>
+              <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)" title="읽음 표시">${isRead?'● 읽음':'○ 읽음'}</button>
+              <button class="card-action-btn hide" onclick="hideCard('${g.id}',event)">숨기기</button>
+              <button class="card-action-btn" onclick="copyTitle('${escAttr(title)}',event)">복사</button>
+            </div>
           </div>
         </div>
         <div class="card-thumb">${thumbHtml}</div>
       </div>
     </a>
-    <div class="${isGroup?'group-footer':'card-actions-row'}" style="${isGroup?'':'padding:0 16px 12px;display:flex;justify-content:flex-end;gap:6px'}">
-      ${isGroup ? `
-        <button class="dupe-toggle" onclick="toggleGroup('${g.id}',event)">
-          ${isExpanded
-            ? '▲ 접기'
-            : `▼ <span style="color:var(--text-dim)">${escHtml(lead.source)}</span> 외 <strong style="color:var(--gold)">${g.others.length}건</strong> — ${escHtml(otherSources)}`}
-        </button>
-        <div class="card-actions">
-          <button class="card-action-btn hide" onclick="hideCard('${g.id}',event)">숨기기</button>
-          <button class="card-action-btn" onclick="copyTitle('${escAttr(lead.title)}',event)">복사</button>
-        </div>
-      ` : `
-        <button class="card-action-btn hide" onclick="hideCard('${g.id}',event)">숨기기</button>
-        <button class="card-action-btn" onclick="copyTitle('${escAttr(lead.title)}',event)">복사</button>
-      `}
+    ${isGroup ? `
+    <div class="group-footer">
+      <button class="dupe-toggle" onclick="toggleGroup('${g.id}',event)">
+        ${isExpanded ? '▲ 접기'
+          : `▼ <span style="color:var(--text-dim)">${srcDisp}</span> 외 <strong style="color:var(--gold)">${g.others.length}건</strong> — ${otherSources}`}
+      </button>
     </div>
-    ${isExpanded ? `<div class="dupe-list">${dupeRows}</div>` : ''}
+    ${isExpanded ? `<div class="dupe-list">${dupeRows}</div>` : ''}` : ''}
   </div>`;
 }
 
 function fallbackThumb(source) {
-  const short = (source||'').replace(/\.(co\.kr|com|kr|net)$/,'').split('.').pop().toUpperCase().slice(0,6);
-  const colors = ['#1e2a3a','#1a2438','#1c2535','#1e2230'];
-  const c = colors[short.charCodeAt(0)%colors.length];
-  return `<div class="card-thumb-placeholder" style="background:${c}">
-    <span class="placeholder-icon">📰</span>
-    <span class="placeholder-logo">${short}</span>
+  const disp = sourceDisplay(source||'');
+  return `<div class="card-thumb-placeholder" style="min-height:110px;background:var(--surface2)">
+    <img class="source-favicon" width="28" height="28" style="width:28px;height:28px;border-radius:4px;opacity:.5"
+      src="${faviconUrl(source)}" onerror="this.style.display='none'" alt="">
+    <span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:4px">${disp}</span>
   </div>`;
 }
 
-function tagsFor(keyword) {
-  const map = { '두바이':'dubai','아부다비':'abudhabi','UAE':'uae' };
-  const cls = map[keyword]||'';
-  return `<span class="card-tag ${cls}">${keyword}</span>`;
-}
-
-function pubDateToRelative(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr), now = new Date();
-  const diff = Math.floor((now-d)/60000);
-  if (diff < 1)  return '방금 전';
-  if (diff < 60) return `${diff}분 전`;
-  const h = Math.floor(diff/60);
-  if (h < 24)    return `${h}시간 전`;
-  return `${Math.floor(h/24)}일 전`;
+function tagsFor(kw) {
+  const map={'두바이':'dubai','아부다비':'abudhabi','UAE':'uae'};
+  return `<span class="card-tag ${map[kw]||''}">${kw}</span>`;
 }
 
 function renderStats() {
-  const data = state.data;
-  if (!data) return;
-  const exclusive = data.groups.filter(g=>g.lead.originality==='exclusive').length;
-  const original  = data.groups.filter(g=>g.lead.originality==='original').length;
-  document.getElementById('statsGrid').innerHTML = `
+  const data=state.data; if(!data) return;
+  const ex=data.groups.filter(g=>g.lead.originality==='exclusive').length;
+  const or=data.groups.filter(g=>g.lead.originality==='original').length;
+  document.getElementById('statsGrid').innerHTML=`
     <div class="stat-card"><div class="stat-num">${data.total||data.groups.length}</div><div class="stat-label">전체 기사</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--red)">${data.filteredCount}</div><div class="stat-label">필터됨</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:#f59e42">${exclusive}</div><div class="stat-label">단독</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${original}</div><div class="stat-label">심층</div></div>`;
+    <div class="stat-card"><div class="stat-num" style="color:#f59e42">${ex}</div><div class="stat-label">단독</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${or}</div><div class="stat-label">심층</div></div>`;
 }
 
-// ── ACTIONS ────────────────────────────────────────────────────────────────
-function toggleKeyword(kw) {
-  state.activeKeyword = state.activeKeyword===kw ? null : kw; render();
+function updateBookmarkCount() {
+  const n = Object.values(state.likes).filter(Boolean).length;
+  document.getElementById('bookmarkCount').textContent = n;
 }
-function toggleGroup(gid, e) {
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────
+function toggleLike(gid, e) {
   e.stopPropagation(); e.preventDefault();
-  state.expandedGroups.has(gid) ? state.expandedGroups.delete(gid) : state.expandedGroups.add(gid);
-  render();
+  state.likes[gid] = !state.likes[gid];
+  savePersist(); render();
 }
-function hideCard(gid, e) {
+
+function openTagModal(gid, e) {
   e.stopPropagation(); e.preventDefault();
-  state.hidden.add(gid); render();
+  state.tagModalId = gid;
+  renderTagModal();
+  document.getElementById('tagModal').classList.add('open');
 }
-function copyTitle(title, e) {
+function closeTagModal() {
+  document.getElementById('tagModal').classList.remove('open');
+  state.tagModalId = null;
+  state._bulkIds = null;
+  if (state.selectMode) clearSelection();
+  else render();
+}
+function renderTagModal() {
+  const gid = state.tagModalId;
+  const selected = state.tags[gid]||[];
+  document.getElementById('modalTagList').innerHTML = state.allTags.map(t=>`
+    <span class="modal-tag ${selected.includes(t)?'selected':''}" onclick="toggleTagOnCard('${t}')">
+      ${t}${selected.includes(t)?` <span class="tag-remove" onclick="removeTagFromAll(event,'${t}')">×</span>`:''}
+    </span>`).join('');
+}
+function toggleTagOnCard(tag) {
+  const gid = state.tagModalId;
+  if (!gid) return;
+  const ids = gid === '__bulk__' ? (state._bulkIds||[]) : [gid];
+  ids.forEach(id => {
+    if (!state.tags[id]) state.tags[id]=[];
+    const idx=state.tags[id].indexOf(tag);
+    if(idx>-1) state.tags[id].splice(idx,1); else state.tags[id].push(tag);
+    if(state.tags[id].length>0) state.likes[id]=true;
+  });
+  savePersist(); renderTagModal();
+}
+function addModalTag() {
+  const inp=document.getElementById('modalTagInput'), v=inp.value.trim();
+  if(!v) return;
+  if(!state.allTags.includes(v)) state.allTags.push(v);
+  toggleTagOnCard(v);
+  inp.value='';
+}
+function removeTagFromAll(e, tag) {
+  e.stopPropagation();
+  state.allTags=state.allTags.filter(t=>t!==tag);
+  Object.keys(state.tags).forEach(id=>{
+    state.tags[id]=(state.tags[id]||[]).filter(t=>t!==tag);
+  });
+  savePersist(); renderTagModal();
+}
+
+function switchTab(el, tab) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  state.activeTab=tab; render();
+}
+function setBookmarkTag(tag) { state.activeBookmarkTag=tag; render(); }
+
+function toggleKeyword(kw) { state.activeKeyword=state.activeKeyword===kw?null:kw; render(); }
+function toggleGroup(gid,e) {
+  e.stopPropagation(); e.preventDefault();
+  state.expandedGroups.has(gid)?state.expandedGroups.delete(gid):state.expandedGroups.add(gid); render();
+}
+function hideCard(gid,e) { e.stopPropagation(); e.preventDefault(); state.hidden.add(gid); render(); }
+function copyTitle(title,e) {
   e.stopPropagation(); e.preventDefault();
   navigator.clipboard.writeText(title).catch(()=>{});
-  const btn = e.target; btn.textContent='복사됨!';
-  setTimeout(()=>btn.textContent='복사',1200);
+  const btn=e.target; btn.textContent='복사됨!'; setTimeout(()=>btn.textContent='복사',1200);
 }
 function addKeyword() {
-  const i=document.getElementById('newKeyword'), v=i.value.trim();
+  const i=document.getElementById('newKeyword'),v=i.value.trim();
   if(v&&!state.keywords.includes(v)){state.keywords.push(v);i.value='';loadNews();}
 }
 function addFilter() {
-  const i=document.getElementById('newFilter'), v=i.value.trim();
+  const i=document.getElementById('newFilter'),v=i.value.trim();
   if(v&&!state.filters.includes(v)){state.filters.push(v);i.value='';if(state.data)render();}
 }
-function removeFilter(f) {
-  state.filters=state.filters.filter(x=>x!==f); if(state.data)render();
-}
-function setSort(el,sort) {
+function removeFilter(f){state.filters=state.filters.filter(x=>x!==f);if(state.data)render();}
+function setSort(el,sort){
   document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active'); state.sort=sort; render();
 }
 
-// ── ESCAPE HELPERS ────────────────────────────────────────────────────────
-function escHtml(s=''){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+// ── 읽음 처리 ─────────────────────────────────────────────────────────────
+function markRead(gid, e) {
+  // 링크 클릭 시 자동 읽음 처리 (e는 그냥 통과)
+  state.read[gid] = true;
+  savePersist();
+  // DOM 직접 업데이트 (re-render 없이)
+  const card = document.getElementById('card-'+gid);
+  if (card) {
+    card.classList.add('read');
+    const dot = card.querySelector('.read-dot');
+    if (dot) dot.title = '읽음';
+    const readBtn = card.querySelector('.card-action-btn[onclick*="toggleReadBtn"]');
+    if (readBtn) readBtn.textContent = '● 읽음';
+  }
+}
+function toggleReadBtn(gid, e) {
+  e.stopPropagation(); e.preventDefault();
+  state.read[gid] = !state.read[gid];
+  savePersist();
+  const card = document.getElementById('card-'+gid);
+  if (card) {
+    card.classList.toggle('read', !!state.read[gid]);
+    const btn = e.target;
+    btn.textContent = state.read[gid] ? '● 읽음' : '○ 읽음';
+    const dot = card.querySelector('.read-dot');
+    if (dot) dot.title = state.read[gid] ? '읽음' : '안읽음';
+  }
+}
+
+// ── 선택 모드 ─────────────────────────────────────────────────────────────
+function toggleSelectMode() {
+  state.selectMode = !state.selectMode;
+  state.selected.clear();
+  const btn = document.getElementById('selectModeBtn');
+  const list = document.getElementById('newsList');
+  btn.classList.toggle('active', state.selectMode);
+  list.classList.toggle('select-mode', state.selectMode);
+  updateToolbar();
+}
+function handleCardClick(gid, e) {
+  if (!state.selectMode) return;
+  // 선택모드일 때 카드 클릭 = 체크박스 토글
+  if (e.target.closest('a') && !e.target.closest('.card-checkbox')) return;
+  toggleSelect(gid, e);
+}
+function toggleSelect(gid, e) {
+  e.stopPropagation(); e.preventDefault();
+  if (state.selected.has(gid)) state.selected.delete(gid);
+  else state.selected.add(gid);
+  const card = document.getElementById('card-'+gid);
+  if (card) {
+    card.classList.toggle('selected', state.selected.has(gid));
+    const cb = card.querySelector('.card-checkbox');
+    if (cb) cb.checked = state.selected.has(gid);
+  }
+  updateToolbar();
+}
+function updateToolbar() {
+  const n = state.selected.size;
+  const tb = document.getElementById('selectToolbar');
+  tb.classList.toggle('visible', state.selectMode && n > 0);
+  document.getElementById('selCount').textContent = `${n}개 선택`;
+}
+function clearSelection() {
+  state.selected.clear();
+  state.selectMode = false;
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('newsList').classList.remove('select-mode');
+  updateToolbar();
+  render();
+}
+
+// ── 일괄 작업 ─────────────────────────────────────────────────────────────
+function bulkMarkRead() {
+  state.selected.forEach(id => { state.read[id]=true; });
+  savePersist(); clearSelection();
+}
+function bulkMarkUnread() {
+  state.selected.forEach(id => { state.read[id]=false; });
+  savePersist(); clearSelection();
+}
+function bulkLike() {
+  state.selected.forEach(id => { state.likes[id]=true; });
+  savePersist(); clearSelection();
+}
+function bulkHide() {
+  state.selected.forEach(id => state.hidden.add(id));
+  clearSelection();
+}
+function bulkOpenTagModal() {
+  // 선택된 것들 중 첫 번째로 태그 모달 열기 (일괄 적용)
+  const ids = [...state.selected];
+  if (!ids.length) return;
+  state.tagModalId = '__bulk__';
+  state._bulkIds = ids;
+  renderTagModal();
+  document.getElementById('tagModal').classList.add('open');
+}
+
+
 function escAttr(s=''){return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;')}
+
+// 모달 바깥 클릭 닫기
+document.getElementById('tagModal').addEventListener('click',function(e){
+  if(e.target===this) closeTagModal();
+});
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 loadNews();
