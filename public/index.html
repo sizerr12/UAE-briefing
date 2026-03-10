@@ -228,13 +228,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-footer{display:flex;align-items:center;justify-content:space-between;
   margin-top:auto;padding-top:8px}
-.card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
+.card-title-link{display:block;text-decoration:none;color:inherit}
+.card-title-link:hover .card-title{color:var(--blue)}
+.card-thumb-link{display:block;text-decoration:none;flex-shrink:0}
+.card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);text-decoration:none}
 .card-link:hover{color:var(--blue)}
-.card-actions{display:flex;gap:3px;align-items:center;
-  padding:6px 14px 8px;border-top:1px solid var(--border);
-  background:var(--surface);border-radius:0 0 12px 12px;
-  opacity:0;transition:opacity .15s}
-.news-card:hover .card-actions{opacity:1}
+.card-actions-inline{display:flex;gap:3px;align-items:center}
+.card-actions{display:none} /* 구버전 호환용 */
 .card-action-btn{font-size:11px;color:var(--text-muted);cursor:pointer;padding:3px 8px;
   border-radius:5px;border:1px solid transparent;transition:all .15s;background:none;
   font-family:'Noto Sans KR',sans-serif}
@@ -581,16 +581,13 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
   <kbd>?</kbd> 단축키 닫기
 </div>
 
-<script type="module">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
 // ════════════════════════════════════════
-// 🔥 FIREBASE CONFIG
+// 🔥 FIREBASE CONFIG (compat mode - no module needed)
 // ════════════════════════════════════════
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyAsunIijhP6Y49q9iuZ8P2vAR_A4llRENg",
   authDomain: "uae-briefing.firebaseapp.com",
@@ -600,9 +597,9 @@ const firebaseConfig = {
   appId: "1:675050556668:web:1bc5e9c38f4675c2af1b79"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
 // 허용된 이메일 목록 (여기에 요환님 + 와이프 구글 이메일 추가)
 const ALLOWED_EMAILS = [
@@ -613,12 +610,12 @@ const ALLOWED_EMAILS = [
 let currentUser = null;
 
 // ── 로그인 상태 감지 ──
-onAuthStateChanged(auth, async (user) => {
+auth.onAuthStateChanged(async (user) => {
   if (user) {
     // 허용 목록 체크 (비어있으면 누구나 접속 가능)
     if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.includes(user.email)) {
       showLockError('접근 권한이 없습니다: ' + user.email);
-      await fbSignOut(auth);
+      await auth.signOut();
       return;
     }
     currentUser = user;
@@ -651,11 +648,11 @@ function showLockError(msg) {
 }
 
 async function signInWithGoogle() {
-  const provider = new GoogleAuthProvider();
+  const provider = new firebase.auth.GoogleAuthProvider();
   document.getElementById('lockLoading').style.display = 'flex';
   document.querySelector('.google-login-btn').style.display = 'none';
   try {
-    await signInWithPopup(auth, provider);
+    await auth.signInWithPopup(provider);
   } catch(e) {
     showLockError('로그인 실패. 다시 시도해주세요.');
     document.getElementById('lockLoading').style.display = 'none';
@@ -664,21 +661,20 @@ async function signInWithGoogle() {
 }
 
 async function signOut() {
-  await fbSignOut(auth);
+  await auth.signOut();
 }
 
 // ── Firestore: 유저 데이터 로드/저장 ──
 async function loadUserData() {
   if (!currentUser) return;
   try {
-    const ref = doc(db, 'users', currentUser.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
+    const snap = await db.collection('users').doc(currentUser.uid).get();
+    if (snap.exists) {
       const d = snap.data();
-      if (d.likes)   state.likes   = d.likes;
-      if (d.tags)    state.tags    = d.tags;
-      if (d.allTags) state.allTags = d.allTags;
-      if (d.read)    state.read    = d.read;
+      if (d.likes)    state.likes    = d.likes;
+      if (d.tags)     state.tags     = d.tags;
+      if (d.allTags)  state.allTags  = d.allTags;
+      if (d.read)     state.read     = d.read;
       if (d.keywords) state.keywords = d.keywords;
       if (d.filters)  state.filters  = d.filters;
     }
@@ -688,19 +684,18 @@ async function loadUserData() {
 async function saveToCloud() {
   if (!currentUser) { savePersist(); return; }
   try {
-    const ref = doc(db, 'users', currentUser.uid);
-    await setDoc(ref, {
+    await db.collection('users').doc(currentUser.uid).set({
       likes:    state.likes,
       tags:     state.tags,
       allTags:  state.allTags,
       read:     state.read,
       keywords: state.keywords,
       filters:  state.filters,
-      updatedAt: serverTimestamp()
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) {
     console.warn('saveToCloud:', e);
-    savePersist(); // fallback
+    savePersist();
   }
 }
 
@@ -1006,39 +1001,42 @@ function renderCard(g, i) {
 
   return `
   <div class="news-card ${isGroup?'group-card':''} ${highlight?'highlight':''} ${isRead?'read':''} ${isSelected?'selected':''}"
-       style="animation-delay:${i*35}ms" id="card-${g.id}"
-       onclick="handleCardClick('${g.id}',event)">
+       style="animation-delay:${i*35}ms" id="card-${g.id}">
     <input type="checkbox" class="card-checkbox" ${isSelected?'checked':''} onclick="toggleSelect('${g.id}',event)">
-    <a class="group-lead-link" href="${href}" target="_blank" rel="noopener noreferrer"
-       onclick="markRead('${g.id}',event)">
-      <div class="card-inner">
-        <div class="card-body">
-          <div class="card-meta">
-            <span class="read-dot" title="${isRead?'읽음':'안읽음'}"></span>
-            ${badge}
-            ${starsHtml(score)}
-            <div class="source-row">
-              ${sourceFaviconHtml(lead.source)}
-              <span class="card-source">${srcDisp}</span>
-            </div>
-            <span class="card-time">${lead.time||''}</span>
-            <div class="card-tags">${tagsFor(lead.keyword)}</div>
+    <div class="card-inner">
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="read-dot" title="${isRead?'읽음':'안읽음'}"></span>
+          ${badge}
+          ${starsHtml(score)}
+          <div class="source-row">
+            ${sourceFaviconHtml(lead.source)}
+            <span class="card-source">${srcDisp}</span>
           </div>
+          <span class="card-time">${lead.time||''}</span>
+          <div class="card-tags">${tagsFor(lead.keyword)}</div>
+        </div>
+        <a class="card-title-link" href="${href}" target="_blank" rel="noopener noreferrer"
+           onclick="markRead('${g.id}',event)">
           <div class="card-title">${title}</div>
           <div class="card-desc">${desc}</div>
-          ${tagChips?`<div class="bookmark-tags-on-card">${tagChips}</div>`:''}
-          <div class="card-footer">
-            <span class="card-link">네이버 뉴스에서 보기 →</span>
+        </a>
+        ${tagChips?`<div class="bookmark-tags-on-card">${tagChips}</div>`:''}
+        <div class="card-footer">
+          <a class="card-link" href="${href}" target="_blank" rel="noopener noreferrer"
+             onclick="markRead('${g.id}',event)">네이버 뉴스에서 보기 →</a>
+          <div class="card-actions-inline">
+            <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)">${isLiked?'♥':'♡'}</button>
+            <button class="card-action-btn" onclick="openTagModal('${g.id}',event)">🏷</button>
+            <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)">${isRead?'● 읽':'○ 읽'}</button>
+            <button class="card-action-btn danger" onclick="hideCard('${g.id}',event)">✕</button>
           </div>
         </div>
-        <div class="card-thumb">${thumbHtml}</div>
       </div>
-    </a>
-    <div class="card-actions">
-      <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)">${isLiked?'♥':'♡'}</button>
-      <button class="card-action-btn" onclick="openTagModal('${g.id}',event)">🏷</button>
-      <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)">${isRead?'● 읽':'○ 읽'}</button>
-      <button class="card-action-btn danger" onclick="hideCard('${g.id}',event)">✕</button>
+      <a class="card-thumb-link" href="${href}" target="_blank" rel="noopener noreferrer"
+         onclick="markRead('${g.id}',event)">
+        <div class="card-thumb">${thumbHtml}</div>
+      </a>
     </div>
     ${isGroup?`
     <div class="group-footer">
@@ -1168,7 +1166,7 @@ function toggleSelectMode() {
 }
 function handleCardClick(gid,e) {
   if(!state.selectMode) return;
-  if(e.target.closest('a')) return;
+  if(e.target.closest('a,button,input')) return;
   toggleSelect(gid,e);
 }
 function toggleSelect(gid,e) {
@@ -1299,8 +1297,14 @@ function escAttr(s=''){return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quo
 document.getElementById('tagModal').addEventListener('click',function(e){
   if(e.target===this) closeTagModal();
 });
-
-// ── 모든 버튼 이벤트 연결 ──
+document.getElementById('newsList').addEventListener('click',function(e){
+  if(!state.selectMode) return;
+  const card=e.target.closest('.news-card');
+  if(!card) return;
+  if(e.target.closest('a,button,input')) return;
+  const gid=card.id.replace('card-','');
+  toggleSelect(gid,e);
+});
 document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
 document.getElementById('signOutBtn').addEventListener('click', signOut);
 document.getElementById('kbdHintBtn').addEventListener('click', toggleKbdHint);
@@ -1321,19 +1325,6 @@ document.getElementById('selLikeBtn').addEventListener('click', bulkLike);
 document.getElementById('selTagBtn').addEventListener('click', bulkOpenTagModal);
 document.getElementById('selHideBtn').addEventListener('click', bulkHide);
 document.getElementById('selCancelBtn').addEventListener('click', clearSelection);
-
-// ── window 등록: HTML onclick="" 속성이 module scope에서도 작동하도록 ──
-Object.assign(window, {
-  setViewFilter, toggleKeyword, removeKeyword,
-  addKeyword, addFilter, removeFilter,
-  handleCardClick, toggleSelect, markRead,
-  toggleLike, openTagModal, toggleReadBtn, hideCard,
-  toggleDupe, toggleSelectMode, clearSelection,
-  bulkMarkRead, bulkMarkUnread, bulkLike, bulkHide, bulkOpenTagModal,
-  openTagModalFor, renderTagModal, closeTagModal, addModalTag, removeTagFromModal,
-  setSort, setView, setViewFilter, markAllRead,
-  toggleKbdHint, loadNews, signInWithGoogle, signOut,
-});
 </script>
 </body>
 </html>
