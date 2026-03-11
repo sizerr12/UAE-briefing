@@ -1,22 +1,22 @@
-// api/summarize.js — Claude Haiku로 영문 기사 한국어 3줄 요약
+// api/summarize.js — OpenAI GPT-4o-mini 한국어 3줄 요약
 const https = require('https');
 
-function callClaude(prompt, apiKey) {
+function callOpenAI(prompt, apiKey) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'gpt-4o-mini',
       max_tokens: 400,
+      temperature: 0.2,
       messages: [{ role: 'user', content: prompt }]
     });
 
     const req = https.request({
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
+      hostname: 'api.openai.com',
+      path: '/v1/chat/completions',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Length': Buffer.byteLength(body)
       },
       timeout: 20000
@@ -26,9 +26,9 @@ function callClaude(prompt, apiKey) {
       res.on('end', () => {
         try {
           const j = JSON.parse(data);
-          if (j.error) return reject(new Error(`Claude: ${j.error.message}`));
-          const text = j.content?.[0]?.text || '';
-          if (!text) return reject(new Error(`Claude empty. Raw: ${data.slice(0,200)}`));
+          if (j.error) return reject(new Error(`OpenAI: ${j.error.message}`));
+          const text = j.choices?.[0]?.message?.content || '';
+          if (!text) return reject(new Error(`OpenAI empty. Raw: ${data.slice(0,200)}`));
           resolve(text);
         } catch(e) {
           reject(new Error(`Parse error: ${data.slice(0,200)}`));
@@ -57,8 +57,8 @@ module.exports = async function handler(req, res) {
   catch(e) { return res.status(400).json({ error: 'invalid json' }); }
 
   const { title = '', description = '' } = payload;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY not set' });
 
   const prompt = `다음 UAE 영문 뉴스 기사를 한국어로 3줄 요약해주세요.
 핵심 사실만 간결하게, 숫자/금액/고유명사는 영문 그대로 쓰세요.
@@ -71,7 +71,7 @@ module.exports = async function handler(req, res) {
 내용: ${description}`;
 
   try {
-    const raw = await callClaude(prompt, apiKey);
+    const raw = await callOpenAI(prompt, apiKey);
 
     const lines = raw.split('\n')
       .map(l => l.trim())
