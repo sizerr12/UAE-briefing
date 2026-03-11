@@ -125,8 +125,24 @@ module.exports = async function handler(req, res) {
   // 최신순 정렬
   allItems.sort((a,b) => new Date(b.pubDate||0) - new Date(a.pubDate||0));
 
+  // 단독/심층 판단
+  // - exclusive: Reuters/Bloomberg 단독 (다른 매체 중복 없음)
+  // - original: The National / Gulf News / WAM 자체 기사, 또는 여러 매체가 보도
+  // - pr: 단일 언론사만 보도한 경미한 소식
+  const TIER1 = new Set(['reuters.com','bloomberg.com','wam.ae']);
+  const TIER2 = new Set(['thenationalnews.com','gulfnews.com','khaleejtimes.com','arabianbusiness.com']);
+  function intlOriginality(group) {
+    const lead = group[0];
+    if (group.length >= 3) return 'exclusive';                     // 3개 이상 보도 = 중요 단독급
+    if (TIER1.has(lead.source)) return group.length === 1 ? 'exclusive' : 'original';
+    if (TIER2.has(lead.source) && group.length >= 2) return 'original';
+    if (group.length >= 2) return 'original';
+    return 'pr';
+  }
+
   const groups = groupDupes(allItems).slice(0,60).map((g,i) => {
     const lead = g[0];
+    const orig = intlOriginality(g);
     return {
       id: 'intl_' + i,
       lead: {
@@ -140,7 +156,7 @@ module.exports = async function handler(req, res) {
         pubDate:      lead.pubDate,
         time:         timeAgo(lead.pubDate),
         keyword:      'Global',
-        originality:  g.length > 1 ? 'original' : 'pr',
+        originality:  orig,
         thumbnail:    null,
         lang:         'en',
       },
