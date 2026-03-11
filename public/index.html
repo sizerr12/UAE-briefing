@@ -68,6 +68,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .logo-text{color:var(--text);font-weight:700}.logo-sub{color:var(--text-muted);font-size:10px}
 .topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-center{display:flex;gap:2px;background:var(--surface2);
+  border-radius:8px;padding:3px;border:1px solid var(--border)}
+.main-tab{padding:5px 18px;border-radius:6px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .18s;color:var(--text-muted);
+  font-family:'Noto Sans KR',sans-serif;white-space:nowrap;user-select:none}
+.main-tab.active{background:var(--surface);color:var(--blue);
+  box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .topbar-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
   padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;
   font-family:'Space Mono',monospace;transition:all .2s}
@@ -231,6 +238,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .card-title-link{display:block;text-decoration:none;color:inherit}
 .card-title-link:hover .card-title{color:var(--blue)}
 .card-thumb-link{display:block;text-decoration:none;flex-shrink:0}
+
+/* 요약 박스 */
+.summary-box{margin:0 16px 12px;padding:12px 14px;background:linear-gradient(135deg,rgba(0,82,204,.04),rgba(0,82,204,.02));
+  border:1px solid rgba(0,82,204,.15);border-radius:10px;font-size:13px;
+  line-height:1.7;color:var(--text-dim)}
+.summary-box.loading{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:12px}
+.summary-box ol{margin:0;padding-left:18px}
+.summary-box ol li{margin-bottom:4px}
+.summary-box .summary-source{font-family:'Space Mono',monospace;font-size:9px;
+  color:var(--text-muted);margin-top:8px;padding-top:6px;border-top:1px solid var(--border)}
+.summary-btn{color:var(--blue)!important;border-color:rgba(0,82,204,.2)!important;
+  background:rgba(0,82,204,.05)!important;font-weight:600}
 .card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);text-decoration:none}
 .card-link:hover{color:var(--blue)}
 .card-actions-inline{display:flex;gap:3px;align-items:center}
@@ -430,6 +449,10 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <div class="logo-icon">🇦🇪</div>
     <div><div class="logo-text">UAE BRIEFING</div><div class="logo-sub">두바이 · 아부다비 · UAE</div></div>
   </div>
+  <div class="topbar-center">
+    <div class="main-tab active" id="tabKr" onclick="switchTab('kr')">🇰🇷 국내</div>
+    <div class="main-tab" id="tabIntl" onclick="switchTab('intl')">🌍 해외</div>
+  </div>
   <div class="topbar-right">
     <span class="badge-live">LIVE</span>
     <span class="last-updated" id="lastUpdated">—</span>
@@ -483,11 +506,16 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
           <div class="nav-item-left"><span class="nav-icon">♥</span>보관함</div>
           <span class="nav-count" id="cnt-liked">0</span>
         </div>
+        <div class="nav-divider"></div>
+        <div class="nav-item" onclick="setViewFilter(this,'history')">
+          <div class="nav-item-left"><span class="nav-icon">📚</span>읽은 기록</div>
+          <span class="nav-count" id="cnt-history">0</span>
+        </div>
       </div>
     </div>
 
     <!-- 키워드 필터 -->
-    <div class="sidebar-section">
+    <div class="sidebar-section" id="sidebarKwSection">
       <div class="sidebar-label">📡 키워드</div>
       <div class="keyword-list" id="keywordList"></div>
       <div class="add-row">
@@ -497,12 +525,24 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     </div>
 
     <!-- 제외 키워드 -->
-    <div class="sidebar-section">
+    <div class="sidebar-section" id="sidebarFtSection">
       <div class="sidebar-label">🚫 제외</div>
       <div class="filter-list" id="filterList"></div>
       <div class="add-row">
         <input class="add-input" id="newFilter" placeholder="제외할 단어..." onkeydown="if(event.key==='Enter')addFilter()">
         <button class="add-btn" id="addFilterBtn" style="background:var(--red)">+</button>
+      </div>
+    </div>
+
+    <!-- 해외 매체 안내 (intl 탭에서만 표시) -->
+    <div class="sidebar-section" id="sidebarIntlSection" style="display:none">
+      <div class="sidebar-label">📰 해외 매체</div>
+      <div style="display:flex;flex-direction:column;gap:5px;padding:2px 0">
+        ${['gulfnews.com','thenationalnews.com','khaleejtimes.com','arabianbusiness.com','wam.ae'].map(d=>`
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=${d}" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>${d.replace(/^www\./,'').replace(/\.(com|ae)$/,'')}</span>
+        </div>`).join('')}
       </div>
     </div>
 
@@ -560,10 +600,11 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
 <!-- SELECT TOOLBAR -->
 <div class="select-toolbar" id="selectToolbar">
   <span class="sel-count" id="selCount">0개</span>
+  <button class="sel-btn" id="selAllBtn">☑ 전체</button>
   <div class="sel-divider"></div>
   <button class="sel-btn primary" id="selReadBtn">✓ 읽음</button>
   <button class="sel-btn" id="selUnreadBtn">○ 안읽음</button>
-  <button class="sel-btn" id="selLikeBtn">♥ 보관</button>
+  <button class="sel-btn" id="selLikeBtn">♥ 좋아요</button>
   <button class="sel-btn" id="selTagBtn">🏷 태그</button>
   <div class="sel-divider"></div>
   <button class="sel-btn danger" id="selHideBtn">숨기기</button>
@@ -604,7 +645,7 @@ const db   = firebase.firestore();
 // 허용된 이메일 목록 (여기에 요환님 + 와이프 구글 이메일 추가)
 const ALLOWED_EMAILS = [
   'yoyohwan@gmail.com',
-  'elise@leeumtax.com',
+  'elisewithjc@gmail.com',
 ];
 
 let currentUser = null;
@@ -627,7 +668,15 @@ auth.onAuthStateChanged(async (user) => {
     loadNews();
   } else {
     currentUser = null;
-    showLock();
+    // DEMO_MODE(로컬)에서는 로그인 없이 바로 앱 진입
+    if (DEMO_MODE) {
+      document.getElementById('userName').textContent = 'DEMO';
+      document.getElementById('userAvatar').style.display = 'none';
+      showApp();
+      loadNews();
+    } else {
+      showLock();
+    }
   }
 });
 
@@ -671,12 +720,13 @@ async function loadUserData() {
     const snap = await db.collection('users').doc(currentUser.uid).get();
     if (snap.exists) {
       const d = snap.data();
-      if (d.likes)    state.likes    = d.likes;
-      if (d.tags)     state.tags     = d.tags;
-      if (d.allTags)  state.allTags  = d.allTags;
-      if (d.read)     state.read     = d.read;
-      if (d.keywords) state.keywords = d.keywords;
-      if (d.filters)  state.filters  = d.filters;
+      if (d.likes)       state.likes       = d.likes;
+      if (d.tags)        state.tags        = d.tags;
+      if (d.allTags)     state.allTags     = d.allTags;
+      if (d.read)        state.read        = d.read;
+      if (d.keywords)    state.keywords    = d.keywords;
+      if (d.filters)     state.filters     = d.filters;
+      if (d.readHistory) state.readHistory = d.readHistory;
     }
   } catch(e) { console.warn('loadUserData:', e); }
 }
@@ -685,13 +735,14 @@ async function saveToCloud() {
   if (!currentUser) { savePersist(); return; }
   try {
     await db.collection('users').doc(currentUser.uid).set({
-      likes:    state.likes,
-      tags:     state.tags,
-      allTags:  state.allTags,
-      read:     state.read,
-      keywords: state.keywords,
-      filters:  state.filters,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      likes:       state.likes,
+      tags:        state.tags,
+      allTags:     state.allTags,
+      read:        state.read,
+      keywords:    state.keywords,
+      filters:     state.filters,
+      readHistory: state.readHistory.slice(0,1000),
+      updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) {
     console.warn('saveToCloud:', e);
@@ -770,9 +821,26 @@ function starsHtml(score) {
 // ════════════════════════════════════════
 // CONFIG & DEMO
 // ════════════════════════════════════════
-const API_BASE  = '/api/news';
+const API_BASE      = '/api/news';
+const API_BASE_INTL = '/api/intl';
 const DEMO_MODE = !window.location.hostname.includes('vercel.app')
                && !window.location.hostname.includes('localhost');
+
+// 현재 탭: 'kr' | 'intl'
+let currentTab = 'kr';
+
+// 해외 뉴스 데모 데이터
+const DEMO_INTL = {
+  groups:[
+    {id:'intl_0',lead:{title:'ADNOC Awards $5.8bn Contract for Offshore Gas Development',description:'Abu Dhabi National Oil Company has awarded a major contract for the development of offshore gas fields in the UAE, marking one of the largest energy deals this year.',source:'thenationalnews.com',sourceDisplay:'The National',time:'12m ago',keyword:'Global',originality:'exclusive',link:'https://www.thenationalnews.com',naverLink:null,thumbnail:'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=280&q=80',lang:'en'},others:[]},
+    {id:'intl_1',lead:{title:'Dubai Real Estate Market Hits Record $12bn in Q1 Transactions',description:'Dubai\'s property market recorded its highest ever first-quarter transactions, driven by strong demand from international investors and expats.',source:'gulfnews.com',sourceDisplay:'Gulf News',time:'45m ago',keyword:'Global',originality:'original',link:'https://gulfnews.com',naverLink:null,thumbnail:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=280&q=80',lang:'en'},others:[{title:'Dubai property sales hit new highs',source:'khaleejtimes.com',sourceDisplay:'Khaleej Times',time:'1h ago',link:'https://khaleejtimes.com'}]},
+    {id:'intl_2',lead:{title:'Emirates Airline Reports Record Annual Profit of $4.7bn',description:'Emirates Group announced its highest ever annual profit, boosted by surging passenger demand and cargo revenues across its global network.',source:'gulfnews.com',sourceDisplay:'Gulf News',time:'2h ago',keyword:'Global',originality:'original',link:'https://gulfnews.com',naverLink:null,thumbnail:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=80',lang:'en'},others:[]},
+    {id:'intl_3',lead:{title:'UAE Central Bank Raises GDP Growth Forecast to 5.1% for 2026',description:'The UAE Central Bank has revised upward its economic growth forecast, citing strong non-oil sector performance and continued foreign investment inflows.',source:'arabianbusiness.com',sourceDisplay:'Arabian Business',time:'3h ago',keyword:'Global',originality:'original',link:'https://arabianbusiness.com',naverLink:null,thumbnail:null,lang:'en'},others:[]},
+    {id:'intl_4',lead:{title:'Abu Dhabi Launches $1bn Fund to Support AI and Tech Startups',description:'Abu Dhabi\'s Hub71 tech ecosystem announced a new billion-dollar fund targeting artificial intelligence, fintech and climate tech startups globally.',source:'thenationalnews.com',sourceDisplay:'The National',time:'4h ago',keyword:'Global',originality:'original',link:'https://www.thenationalnews.com',naverLink:null,thumbnail:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=280&q=80',lang:'en'},others:[]},
+  ],
+  filteredCount:0,filteredReasons:[],total:5,
+  fetchedAt:new Date().toISOString()
+};
 
 const DEMO = {
   groups:[
@@ -793,10 +861,10 @@ const DEMO = {
 let state = {
   keywords: JSON.parse(localStorage.getItem('uae_keywords')||'["두바이","아부다비","UAE"]'),
   filters:  JSON.parse(localStorage.getItem('uae_filters')||'["축구","스포츠","골프"]'),
-  viewFilter:'all',       // all/unread/read/exclusive/original/important/liked
+  viewFilter:'all',
   activeKeyword:null,
-  sort:'latest',          // latest/importance
-  view:'card',            // card/compact
+  sort:'latest',
+  view:'card',
   hidden:new Set(),
   expandedGroups:new Set(),
   data:null,
@@ -804,6 +872,8 @@ let state = {
   tags:  JSON.parse(localStorage.getItem('uae_tags')||'{}'),
   allTags: JSON.parse(localStorage.getItem('uae_allTags')||'["경제","비자","부동산","항공","외교"]'),
   read: JSON.parse(localStorage.getItem('uae_read')||'{}'),
+  // 읽은 기사 기록 (최대 1000개, 좋아요 아닌 것만 제한)
+  readHistory: JSON.parse(localStorage.getItem('uae_readHistory')||'[]'),
   selectMode:false,
   selected:new Set(),
   focusedIdx:-1,
@@ -815,7 +885,29 @@ function savePersist() {
   localStorage.setItem('uae_tags', JSON.stringify(state.tags));
   localStorage.setItem('uae_allTags',JSON.stringify(state.allTags));
   localStorage.setItem('uae_read', JSON.stringify(state.read));
-  saveToCloud(); // 클라우드 동기화
+  localStorage.setItem('uae_readHistory', JSON.stringify(state.readHistory));
+  saveToCloud();
+}
+
+// 읽은 기사 히스토리에 추가 (최대 1000개, 좋아요 제외한 오래된 것부터 제거)
+function addToReadHistory(gid, lead) {
+  const already = state.readHistory.find(h=>h.id===gid);
+  if (already) { already.readAt = Date.now(); return; }
+  state.readHistory.unshift({
+    id: gid,
+    title: lead.title,
+    source: lead.source,
+    link: lead.naverLink || lead.link || '#',
+    keyword: lead.keyword,
+    readAt: Date.now(),
+  });
+  // 1000개 초과시 좋아요 아닌 것부터 제거
+  if (state.readHistory.length > 1000) {
+    const liked = state.readHistory.filter(h => state.likes[h.id]);
+    const notLiked = state.readHistory.filter(h => !state.likes[h.id]);
+    notLiked.splice(800); // 좋아요 아닌 것은 800개까지
+    state.readHistory = [...liked, ...notLiked].sort((a,b)=>b.readAt-a.readAt).slice(0,1000);
+  }
 }
 
 // ════════════════════════════════════════
@@ -845,8 +937,45 @@ async function loadNews() {
 }
 
 // ════════════════════════════════════════
-// RENDER
+// 탭 전환
 // ════════════════════════════════════════
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabKr').classList.toggle('active', tab==='kr');
+  document.getElementById('tabIntl').classList.toggle('active', tab==='intl');
+  const kwSection = document.getElementById('sidebarKwSection');
+  const ftSection = document.getElementById('sidebarFtSection');
+  const intlSection = document.getElementById('sidebarIntlSection');
+  if(kwSection)   kwSection.style.display   = tab==='kr' ? '' : 'none';
+  if(ftSection)   ftSection.style.display   = tab==='kr' ? '' : 'none';
+  if(intlSection) intlSection.style.display = tab==='intl' ? '' : 'none';
+  state.viewFilter = 'all';
+  state.activeKeyword = null;
+  document.querySelectorAll('#viewFilters .nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));
+  if(tab==='kr') loadNews();
+  else loadIntlNews();
+}
+
+async function loadIntlNews() {
+  document.getElementById('newsList').innerHTML=
+    `<div class="loading"><div class="loading-spinner"></div><div class="loading-text">해외 뉴스 불러오는 중...</div></div>`;
+  document.getElementById('lastUpdated').textContent='—';
+  try {
+    let data;
+    if(DEMO_MODE){ await new Promise(r=>setTimeout(r,800)); data=DEMO_INTL; }
+    else {
+      const p=new URLSearchParams({filters:state.filters.join(',')});
+      const res=await fetch(`${API_BASE_INTL}?${p}`);
+      if(!res.ok) throw new Error();
+      data=await res.json();
+    }
+    state.data=data;
+    const d=new Date(data.fetchedAt);
+    document.getElementById('lastUpdated').textContent=
+      `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} 업데이트`;
+  } catch(e){ state.data=DEMO_INTL; }
+  render();
+}
 function render() {
   if(!state.data) return;
   renderSidebarCounts();
@@ -858,10 +987,10 @@ function render() {
 
 function getFilteredGroups() {
   if(!state.data) return [];
+  // 읽은 기록 뷰는 별도 처리
+  if(state.viewFilter==='history') return [];
   let groups = state.data.groups.filter(g=>!state.hidden.has(g.id));
-  // 키워드 필터
   if(state.activeKeyword) groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
-  // 뷰 필터
   const vf=state.viewFilter;
   if(vf==='unread')    groups=groups.filter(g=>!state.read[g.id]);
   else if(vf==='read') groups=groups.filter(g=>!!state.read[g.id]);
@@ -869,7 +998,6 @@ function getFilteredGroups() {
   else if(vf==='original')  groups=groups.filter(g=>g.lead.originality==='original');
   else if(vf==='important') groups=groups.filter(g=>importanceScore(g)===3);
   else if(vf==='liked')     groups=groups.filter(g=>!!state.likes[g.id]);
-  // 정렬
   if(state.sort==='importance') groups=[...groups].sort((a,b)=>importanceScore(b)-importanceScore(a));
   return groups;
 }
@@ -885,6 +1013,7 @@ function renderSidebarCounts() {
   set('cnt-original',all.filter(g=>g.lead.originality==='original').length);
   set('cnt-important',all.filter(g=>importanceScore(g)===3).length);
   set('cnt-liked',Object.values(state.likes).filter(Boolean).length);
+  set('cnt-history',state.readHistory.length);
 }
 
 function renderKeywords() {
@@ -935,6 +1064,40 @@ function renderFeed() {
   const data=state.data;
   if(!data) return;
 
+  // 📚 읽은 기록 뷰
+  if(state.viewFilter==='history') {
+    notice.style.display='none';
+    document.getElementById('feedTitle').innerHTML=`읽은 기록 <strong id="feedCount">${state.readHistory.length}건</strong>`;
+    if(!state.readHistory.length){
+      list.innerHTML=`<div class="empty">읽은 기사가 없습니다</div>`;
+      return;
+    }
+    list.className='news-list compact-view';
+    list.innerHTML=state.readHistory.map((h,i)=>{
+      const isLiked=!!state.likes[h.id];
+      const srcDisp=h.source?h.source.replace(/^www\./,'').replace(/\.(co\.kr|com|kr|net)$/,'').split('.').slice(-1)[0]:'';
+      const dt=new Date(h.readAt);
+      const dateStr=`${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      return `<div class="news-card" style="animation-delay:${i*20}ms">
+        <div class="card-body" style="padding:9px 16px">
+          <div class="card-meta" style="margin-bottom:4px">
+            <span class="card-tag ${h.keyword==='두바이'?'dubai':h.keyword==='아부다비'?'abudhabi':'uae'}">${h.keyword||''}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted)">${srcDisp}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);margin-left:auto">${dateStr}</span>
+          </div>
+          <a href="${h.link}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit">
+            <div class="card-title" style="font-size:13px;font-weight:500">${decodeHtml(h.title)}</div>
+          </a>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:5px">
+            <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLikeHistory('${h.id}',event)">${isLiked?'♥':'♡'}</button>
+            <button class="card-action-btn danger" onclick="removeFromHistory('${h.id}',event)" style="font-size:10px;padding:2px 6px">기록 삭제</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
   // 필터 알림
   if(data.filteredCount>0){
     notice.style.display='flex';
@@ -980,7 +1143,7 @@ function renderCard(g, i) {
   const title=decodeHtml(lead.title).replace(/^\[단독\]\s*/,'');
   const desc=decodeHtml(lead.description);
   const href=naverNewsUrl(lead);
-  const srcDisp=sourceDisplay(lead.source);
+  const srcDisp = lead.sourceDisplay || sourceDisplay(lead.source);
 
   const thumbHtml=lead.thumbnail
     ? `<img src="${lead.thumbnail}" alt="" loading="lazy" onerror="this.style.display='none'">`
@@ -997,7 +1160,9 @@ function renderCard(g, i) {
     </a>`).join('');
 
   const otherSources=g.others.map(n=>sourceDisplay(n.source)).join(', ');
-  const tagChips=cardTags.map(t=>`<span class="btag-chip">${t}</span>`).join('');
+  const tagChip = lead.lang==='en'
+    ? `<span class="card-tag" style="background:rgba(0,82,204,.08);color:var(--blue);border-color:rgba(0,82,204,.2)">EN</span>`
+    : `<div class="card-tags">${tagsFor(lead.keyword)}</div>`;
 
   return `
   <div class="news-card ${isGroup?'group-card':''} ${highlight?'highlight':''} ${isRead?'read':''} ${isSelected?'selected':''}"
@@ -1014,24 +1179,26 @@ function renderCard(g, i) {
             <span class="card-source">${srcDisp}</span>
           </div>
           <span class="card-time">${lead.time||''}</span>
-          <div class="card-tags">${tagsFor(lead.keyword)}</div>
+          ${tagChip}
         </div>
         <a class="card-title-link" href="${href}" target="_blank" rel="noopener noreferrer"
            onclick="markRead('${g.id}',event)">
           <div class="card-title">${title}</div>
           <div class="card-desc">${desc}</div>
         </a>
-        ${tagChips?`<div class="bookmark-tags-on-card">${tagChips}</div>`:''}
+        ${cardTags.length?`<div class="bookmark-tags-on-card">${cardTags.map(t=>`<span class="btag-chip">${t}</span>`).join('')}</div>`:''}
         <div class="card-footer">
           <a class="card-link" href="${href}" target="_blank" rel="noopener noreferrer"
-             onclick="markRead('${g.id}',event)">네이버 뉴스에서 보기 →</a>
+             onclick="markRead('${g.id}',event)">${lead.lang==='en' ? 'Read article →' : '네이버 뉴스에서 보기 →'}</a>
           <div class="card-actions-inline">
+            ${lead.lang==='en' ? `<button class="card-action-btn summary-btn" onclick="summarizeArticle('${g.id}','${escAttr(lead.link)}',event)">🇰🇷 요약</button>` : ''}
             <button class="heart-btn ${isLiked?'liked':''}" onclick="toggleLike('${g.id}',event)">${isLiked?'♥':'♡'}</button>
             <button class="card-action-btn" onclick="openTagModal('${g.id}',event)">🏷</button>
             <button class="card-action-btn" onclick="toggleReadBtn('${g.id}',event)">${isRead?'● 읽':'○ 읽'}</button>
             <button class="card-action-btn danger" onclick="hideCard('${g.id}',event)">✕</button>
           </div>
         </div>
+        <div class="summary-box" id="summary-${g.id}" style="display:none"></div>
       </div>
       <a class="card-thumb-link" href="${href}" target="_blank" rel="noopener noreferrer"
          onclick="markRead('${g.id}',event)">
@@ -1091,7 +1258,11 @@ function addFilter() {
 function removeFilter(f){state.filters=state.filters.filter(x=>x!==f);saveKeywords();if(state.data)render();}
 
 function markRead(gid,e) {
-  state.read[gid]=true; savePersist();
+  state.read[gid]=true;
+  // 현재 데이터에서 lead 찾아서 히스토리에 저장
+  const g = state.data && state.data.groups.find(g=>g.id===gid);
+  if(g) addToReadHistory(gid, g.lead);
+  savePersist();
   const card=document.getElementById('card-'+gid);
   if(card){card.classList.add('read');}
 }
@@ -1189,7 +1360,11 @@ function clearSelection() {
   document.getElementById('selectModeBtn').classList.remove('active');
   updateToolbar(); render();
 }
-function bulkMarkRead(){state.selected.forEach(id=>{state.read[id]=true;});savePersist();clearSelection();}
+function bulkMarkRead(){state.selected.forEach(id=>{
+  state.read[id]=true;
+  const g=state.data&&state.data.groups.find(g=>g.id===id);
+  if(g) addToReadHistory(id,g.lead);
+});savePersist();clearSelection();}
 function bulkMarkUnread(){state.selected.forEach(id=>{state.read[id]=false;});savePersist();clearSelection();}
 function bulkLike(){state.selected.forEach(id=>{state.likes[id]=true;});savePersist();clearSelection();}
 function bulkHide(){state.selected.forEach(id=>state.hidden.add(id));clearSelection();}
@@ -1198,8 +1373,106 @@ function bulkOpenTagModal(){
   state.tagModalId='__bulk__'; state._bulkIds=ids;
   renderTagModal(); document.getElementById('tagModal').classList.add('open');
 }
+function selectAll() {
+  const groups=getFilteredGroups();
+  const allSelected=groups.every(g=>state.selected.has(g.id));
+  if(allSelected){
+    groups.forEach(g=>state.selected.delete(g.id));
+  } else {
+    groups.forEach(g=>state.selected.add(g.id));
+  }
+  render(); updateToolbar();
+}
+function toggleLikeHistory(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.likes[gid]=!state.likes[gid]; savePersist(); renderFeed(); renderSidebarCounts();
+}
+function removeFromHistory(gid,e) {
+  e.stopPropagation();e.preventDefault();
+  state.readHistory=state.readHistory.filter(h=>h.id!==gid);
+  savePersist(); renderFeed(); renderSidebarCounts();
+}
 
-// ── 전체 읽음 ──
+// ════════════════════════════════════════
+// 🤖 AI 한국어 요약 (/api/summarize 서버 경유)
+// ════════════════════════════════════════
+const summaryCache = {};
+
+async function summarizeArticle(gid, url, e) {
+  e.stopPropagation(); e.preventDefault();
+  const box = document.getElementById('summary-'+gid);
+  const btn = e.target;
+  if (!box) return;
+
+  // 토글: 열려있으면 닫기
+  if (box.style.display !== 'none') {
+    box.style.display = 'none';
+    btn.textContent = '🇰🇷 요약';
+    return;
+  }
+
+  // 캐시 히트
+  if (summaryCache[gid]) {
+    box.className = 'summary-box';
+    box.innerHTML = summaryCache[gid];
+    box.style.display = 'block';
+    btn.textContent = '접기';
+    return;
+  }
+
+  // 로딩
+  box.className = 'summary-box loading';
+  box.style.display = 'flex';
+  box.innerHTML = `<div class="loading-spinner" style="width:14px;height:14px;border-width:2px"></div><span>AI 요약 중...</span>`;
+  btn.textContent = '...';
+  btn.disabled = true;
+
+  try {
+    const g = state.data && state.data.groups.find(x => x.id === gid);
+    const title       = g?.lead?.title       || '';
+    const description = g?.lead?.description || '';
+    const source      = g?.lead?.source      || '';
+
+    let lines = [];
+
+    if (DEMO_MODE) {
+      // 로컬 데모: 가짜 딜레이 후 예시 요약
+      await new Promise(r => setTimeout(r, 1000));
+      lines = [
+        title.slice(0, 60) + (title.length > 60 ? '...' : '') + ' 관련 내용이 보고되었습니다.',
+        '업계 전문가들은 이번 발표가 UAE 경제 성장에 긍정적인 영향을 미칠 것으로 전망했습니다.',
+        '자세한 내용은 원문 기사를 통해 확인할 수 있습니다. (로컬 데모 모드)'
+      ];
+    } else {
+      // 실제: Vercel 서버 함수 호출 (API 키 서버에서만 사용)
+      const res = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, title, description })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || '서버 오류');
+      lines = data.summary || [];
+    }
+
+    if (!lines.length) throw new Error('empty');
+
+    const html = `<ol>${lines.map(l => `<li>${l}</li>`).join('')}</ol>`
+               + `<div class="summary-source">🤖 Claude AI 요약 · ${source}</div>`;
+    summaryCache[gid] = html;
+    box.className = 'summary-box';
+    box.innerHTML = html;
+    box.style.display = 'block';
+    btn.textContent = '접기';
+
+  } catch(err) {
+    box.className = 'summary-box';
+    box.innerHTML = `<span style="color:var(--text-muted);font-size:12px">⚠ 요약 실패 — 잠시 후 다시 시도해주세요.</span>`;
+    box.style.display = 'block';
+    btn.textContent = '🇰🇷 요약';
+  }
+  btn.disabled = false;
+}
 function markAllRead() {
   const groups = getFilteredGroups();
   if (!groups.length) return;
@@ -1319,7 +1592,7 @@ document.getElementById('addKeywordBtn').addEventListener('click', addKeyword);
 document.getElementById('addFilterBtn').addEventListener('click', addFilter);
 document.getElementById('modalAddTagBtn').addEventListener('click', addModalTag);
 document.getElementById('modalCloseBtn').addEventListener('click', closeTagModal);
-document.getElementById('selReadBtn').addEventListener('click', bulkMarkRead);
+document.getElementById('selAllBtn').addEventListener('click', selectAll);
 document.getElementById('selUnreadBtn').addEventListener('click', bulkMarkUnread);
 document.getElementById('selLikeBtn').addEventListener('click', bulkLike);
 document.getElementById('selTagBtn').addEventListener('click', bulkOpenTagModal);
