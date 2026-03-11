@@ -250,6 +250,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   color:var(--text-muted);margin-top:8px;padding-top:6px;border-top:1px solid var(--border)}
 .summary-btn{color:var(--blue)!important;border-color:rgba(0,82,204,.2)!important;
   background:rgba(0,82,204,.05)!important;font-weight:600}
+.intl-src-item{display:flex;align-items:center;justify-content:space-between;
+  padding:5px 8px;border-radius:6px;cursor:pointer;transition:background .15s;
+  font-size:12px;color:var(--text-dim)}
+.intl-src-item:hover{background:var(--surface2)}
+.intl-src-item.active{background:rgba(0,82,204,.08);color:var(--blue);font-weight:600}
+.intl-src-left{display:flex;align-items:center;gap:7px}
+.intl-src-count{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)}
 .card-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);text-decoration:none}
 .card-link:hover{color:var(--blue)}
 .card-actions-inline{display:flex;gap:3px;align-items:center}
@@ -534,39 +541,13 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
       </div>
     </div>
 
-    <!-- 해외 매체 안내 (intl 탭에서만 표시) -->
+    <!-- 해외 매체 필터 (intl 탭에서만 표시) -->
     <div class="sidebar-section" id="sidebarIntlSection" style="display:none">
-      <div class="sidebar-label">📰 수집 매체</div>
-      <div style="display:flex;flex-direction:column;gap:5px;padding:2px 0">
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=thenationalnews.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>The National</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=gulfnews.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Gulf News</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=khaleejtimes.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Khaleej Times</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=arabianbusiness.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Arabian Business</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=wam.ae" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>WAM (UAE 공식통신사)</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=reuters.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Reuters</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=bloomberg.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Bloomberg</span>
-        </div>
+      <div class="sidebar-label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>📰 언론사</span>
+        <span id="intlSourceClear" onclick="setIntlSource(null)" style="font-size:10px;color:var(--blue);cursor:pointer;display:none">전체보기</span>
       </div>
+      <div id="intlSourceList" style="display:flex;flex-direction:column;gap:2px;padding:2px 0"></div>
     </div>
 
     <!-- 통계 -->
@@ -886,6 +867,7 @@ let state = {
   filters:  JSON.parse(localStorage.getItem('uae_filters')||'["축구","스포츠","골프"]'),
   viewFilter:'all',
   activeKeyword:null,
+  activeIntlSource:null,
   sort:'latest',
   view:'card',
   hidden:new Set(),
@@ -974,6 +956,7 @@ function switchTab(tab) {
   if(intlSection) intlSection.style.display = tab==='intl' ? '' : 'none';
   state.viewFilter = 'all';
   state.activeKeyword = null;
+  state.activeIntlSource = null;
   document.querySelectorAll('#viewFilters .nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));
   if(tab==='kr') loadNews();
   else loadIntlNews();
@@ -1011,6 +994,7 @@ function render() {
   renderSidebarCounts();
   renderKeywords();
   renderFilters();
+  renderIntlSources();
   renderStats();
   renderFeed();
 }
@@ -1019,9 +1003,12 @@ function getFilteredGroups() {
   if(!state.data) return [];
   if(state.viewFilter==='history') return [];
   let groups = state.data.groups.filter(g=>!state.hidden.has(g.id));
-  // 국내 탭에서만 키워드 필터 적용
+  // 국내 탭: 키워드 필터
   if(currentTab==='kr' && state.activeKeyword)
     groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
+  // 해외 탭: 언론사 필터
+  if(currentTab==='intl' && state.activeIntlSource)
+    groups=groups.filter(g=>g.lead.source===state.activeIntlSource);
   const vf=state.viewFilter;
   if(vf==='unread')    groups=groups.filter(g=>!state.read[g.id]);
   else if(vf==='read') groups=groups.filter(g=>!!state.read[g.id]);
@@ -1277,7 +1264,38 @@ function setSort(el, sort) {
   document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active'); state.sort=sort; renderFeed();
 }
-function toggleKeyword(kw) { state.activeKeyword=state.activeKeyword===kw?null:kw; render(); }
+function renderIntlSources() {
+  const el = document.getElementById('intlSourceList');
+  const clearBtn = document.getElementById('intlSourceClear');
+  if (!el || currentTab !== 'intl' || !state.data) return;
+
+  // 언론사별 카운트 집계
+  const counts = {};
+  const displayNames = {};
+  state.data.groups.forEach(g => {
+    const src = g.lead.source;
+    counts[src] = (counts[src]||0) + 1;
+    displayNames[src] = g.lead.sourceDisplay || src;
+  });
+
+  const sources = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if (clearBtn) clearBtn.style.display = state.activeIntlSource ? '' : 'none';
+
+  el.innerHTML = sources.map(([src, cnt]) => `
+    <div class="intl-src-item ${state.activeIntlSource===src?'active':''}" onclick="setIntlSource('${src}')">
+      <div class="intl-src-left">
+        <img src="https://www.google.com/s2/favicons?sz=16&domain=${src}"
+          style="width:14px;height:14px;border-radius:2px" onerror="this.style.display='none'" alt="">
+        <span>${displayNames[src]}</span>
+      </div>
+      <span class="intl-src-count">${cnt}</span>
+    </div>`).join('');
+}
+
+function setIntlSource(src) {
+  state.activeIntlSource = src;
+  render();
+}
 function addKeyword() {
   const i=document.getElementById('newKeyword'),v=i.value.trim();
   if(v&&!state.keywords.includes(v)){state.keywords.push(v);i.value='';saveKeywords();loadNews();}
@@ -1475,14 +1493,14 @@ async function summarizeArticle(gid, url, e) {
         '자세한 내용은 원문 기사를 통해 확인할 수 있습니다. (로컬 데모 모드)'
       ];
     } else {
-      // 실제: Vercel 서버 함수 호출 (API 키 서버에서만 사용)
+      // 실제: Vercel 서버 함수 호출
       const res = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, title, description })
       });
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || '서버 오류');
+      if (!res.ok || data.error) throw new Error(`[${res.status}] ${data.error || '서버 오류'}`);
       lines = data.summary || [];
     }
 
@@ -1498,7 +1516,7 @@ async function summarizeArticle(gid, url, e) {
 
   } catch(err) {
     box.className = 'summary-box';
-    box.innerHTML = `<span style="color:var(--text-muted);font-size:12px">⚠ 요약 실패 — 잠시 후 다시 시도해주세요.</span>`;
+    box.innerHTML = `<span style="color:var(--red);font-size:12px">⚠ ${err.message}</span>`;
     box.style.display = 'block';
     btn.textContent = '🇰🇷 요약';
   }
