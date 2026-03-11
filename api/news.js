@@ -170,14 +170,15 @@ module.exports = async function handler(req, res) {
   const result = groups.map((group, i) => {
     const lead = pickLead(group);
     const orig = originality(group, lead);
-    // 링크 처리:
-    // - lead.link = 네이버 인뉴스 URL (n.news.naver.com/... 또는 news.naver.com/...)
-    // - lead.originallink = 언론사 직접 URL
     const isNaverInNews = (url) => url && (url.includes('n.news.naver.com') || url.includes('news.naver.com/'));
     const naverLink = isNaverInNews(lead.link) ? lead.link : null;
 
+    // 안정적인 ID: 제목 앞 40자 기반 해시 (새로고침해도 같은 기사 = 같은 id)
+    const rawId = (lead.title || '').replace(/[^a-zA-Z0-9가-힣]/g, '').slice(0, 40);
+    const stableId = 'g_' + rawId.split('').reduce((h,c)=>(((h<<5)-h)+c.charCodeAt(0))|0, 0).toString(36).replace('-','n');
+
     return {
-      id: i,
+      id: stableId,
       lead: {
         title: lead.title.replace(/<[^>]+>/g, ''),
         description: lead.description.replace(/<[^>]+>/g, ''),
