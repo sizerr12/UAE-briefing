@@ -28,7 +28,8 @@ function fetchArticleText(url) {
             .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
             .replace(/&quot;/g, '"')
-            .replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27FF]/gu, '')  // 이모지 제거
+            .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FFFF}]/gu, '')  // 이모지/특수문자 제거
+            .replace(/[\uFFFD\uFFFE\uFFFF]/g, '')  // 깨진 문자 제거
             .replace(/\s+/g, ' ')
             .trim().slice(0, 3000);
           resolve(text);
@@ -102,6 +103,10 @@ module.exports = async function handler(req, res) {
     const crawled = await fetchArticleText(url);
     if (crawled.length > 200) content = crawled;
   }
+
+  // 깨진 문자 제거
+  content = content.replace(/[\uFFFD\uFFFE\uFFFF]/g, '').replace(/\s+/g, ' ').trim();
+  title = title.replace(/[\uFFFD\uFFFE\uFFFF]/g, '').trim();
 
   // 본문 유무에 따라 프롬프트 분기
   const hasContent = content.length > 100;
