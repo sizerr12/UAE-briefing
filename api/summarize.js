@@ -1,22 +1,22 @@
-// api/summarize.js — Gemini Flash 한국어 3줄 요약
+// api/summarize.js — Claude Haiku로 영문 기사 한국어 3줄 요약
 const https = require('https');
 
-function callGemini(prompt, apiKey) {
+function callClaude(prompt, apiKey) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 400, temperature: 0.2 }
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }]
     });
 
-    // v1 endpoint 사용 (v1beta보다 안정적)
-    const path = `/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
     const req = https.request({
-      hostname: 'generativelanguage.googleapis.com',
-      path,
+      hostname: 'api.anthropic.com',
+      path: '/v1/messages',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
         'Content-Length': Buffer.byteLength(body)
       },
       timeout: 20000
@@ -26,20 +26,17 @@ function callGemini(prompt, apiKey) {
       res.on('end', () => {
         try {
           const j = JSON.parse(data);
-          // 에러 응답 처리
-          if (j.error) return reject(new Error(`Gemini: ${j.error.message || JSON.stringify(j.error)}`));
-          // 안전 필터에 걸린 경우
-          if (j.candidates?.[0]?.finishReason === 'SAFETY') return reject(new Error('Gemini: SAFETY filter'));
-          const text = j.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          if (!text) return reject(new Error(`Gemini empty. Raw: ${data.slice(0, 200)}`));
+          if (j.error) return reject(new Error(`Claude: ${j.error.message}`));
+          const text = j.content?.[0]?.text || '';
+          if (!text) return reject(new Error(`Claude empty. Raw: ${data.slice(0,200)}`));
           resolve(text);
         } catch(e) {
-          reject(new Error(`Parse error: ${data.slice(0, 200)}`));
+          reject(new Error(`Parse error: ${data.slice(0,200)}`));
         }
       });
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Gemini timeout')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
     req.write(body);
     req.end();
   });
@@ -60,8 +57,8 @@ module.exports = async function handler(req, res) {
   catch(e) { return res.status(400).json({ error: 'invalid json' }); }
 
   const { title = '', description = '' } = payload;
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
 
   const prompt = `다음 UAE 영문 뉴스 기사를 한국어로 3줄 요약해주세요.
 핵심 사실만 간결하게, 숫자/금액/고유명사는 영문 그대로 쓰세요.
@@ -74,7 +71,7 @@ module.exports = async function handler(req, res) {
 내용: ${description}`;
 
   try {
-    const raw = await callGemini(prompt, apiKey);
+    const raw = await callClaude(prompt, apiKey);
 
     const lines = raw.split('\n')
       .map(l => l.trim())
@@ -82,10 +79,9 @@ module.exports = async function handler(req, res) {
       .map(l => l.replace(/^[1-3][\.\)]\s*/, ''));
 
     if (!lines.length) {
-      // 번호 없이 줄바꿈으로만 온 경우 fallback
       const fallback = raw.split('\n').map(l=>l.trim()).filter(l=>l.length>10).slice(0,3);
       if (fallback.length) return res.status(200).json({ summary: fallback, raw });
-      return res.status(500).json({ error: `파싱 실패. 원문: ${raw.slice(0,100)}` });
+      return res.status(500).json({ error: `파싱 실패: ${raw.slice(0,100)}` });
     }
 
     return res.status(200).json({ summary: lines, raw });
