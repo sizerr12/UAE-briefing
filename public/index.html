@@ -536,27 +536,14 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
 
     <!-- 해외 매체 안내 (intl 탭에서만 표시) -->
     <div class="sidebar-section" id="sidebarIntlSection" style="display:none">
-      <div class="sidebar-label">📰 해외 매체</div>
+      <div class="sidebar-label">📰 수집 소스</div>
       <div style="display:flex;flex-direction:column;gap:5px;padding:2px 0">
         <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=gulfnews.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Gulf News</span>
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=news.google.com" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>Google News RSS</span>
         </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=thenationalnews.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>The National</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=khaleejtimes.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Khaleej Times</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=arabianbusiness.com" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>Arabian Business</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=wam.ae" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>WAM (UAE 공식)</span>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:2px">
+          UAE · Dubai · Abu Dhabi<br>ADNOC · Emirates 검색 결과
         </div>
       </div>
     </div>
@@ -977,18 +964,25 @@ async function loadIntlNews() {
   document.getElementById('lastUpdated').textContent='—';
   try {
     let data;
-    if(DEMO_MODE){ await new Promise(r=>setTimeout(r,800)); data=DEMO_INTL; }
-    else {
-      const p=new URLSearchParams({filters:state.filters.join(',')});
-      const res=await fetch(`${API_BASE_INTL}?${p}`);
-      if(!res.ok) throw new Error();
+    if(DEMO_MODE){
+      await new Promise(r=>setTimeout(r,600));
+      data=DEMO_INTL;
+    } else {
+      const res=await fetch(`${API_BASE_INTL}`);
+      if(!res.ok) throw new Error('HTTP '+res.status);
       data=await res.json();
+      // API는 성공했지만 기사가 0개면 DEMO fallback
+      if(!data.groups || data.groups.length===0) data=DEMO_INTL;
     }
     state.data=data;
     const d=new Date(data.fetchedAt);
-    document.getElementById('lastUpdated').textContent=
-      `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} 업데이트`;
-  } catch(e){ state.data=DEMO_INTL; }
+    if(!isNaN(d))
+      document.getElementById('lastUpdated').textContent=
+        `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} 업데이트`;
+  } catch(e){
+    console.error('loadIntlNews error:', e);
+    state.data=DEMO_INTL;
+  }
   render();
 }
 function render() {
