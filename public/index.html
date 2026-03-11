@@ -538,11 +538,26 @@ kbd{background:var(--surface2);border:1px solid var(--border);border-radius:4px;
     <div class="sidebar-section" id="sidebarIntlSection" style="display:none">
       <div class="sidebar-label">📰 해외 매체</div>
       <div style="display:flex;flex-direction:column;gap:5px;padding:2px 0">
-        ${['gulfnews.com','thenationalnews.com','khaleejtimes.com','arabianbusiness.com','wam.ae'].map(d=>`
         <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
-          <img src="https://www.google.com/s2/favicons?sz=16&domain=${d}" style="width:14px;height:14px;border-radius:2px" alt="">
-          <span>${d.replace(/^www\./,'').replace(/\.(com|ae)$/,'')}</span>
-        </div>`).join('')}
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=gulfnews.com" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>Gulf News</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=thenationalnews.com" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>The National</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=khaleejtimes.com" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>Khaleej Times</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=arabianbusiness.com" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>Arabian Business</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)">
+          <img src="https://www.google.com/s2/favicons?sz=16&domain=wam.ae" style="width:14px;height:14px;border-radius:2px" alt="">
+          <span>WAM (UAE 공식)</span>
+        </div>
       </div>
     </div>
 
@@ -987,10 +1002,11 @@ function render() {
 
 function getFilteredGroups() {
   if(!state.data) return [];
-  // 읽은 기록 뷰는 별도 처리
   if(state.viewFilter==='history') return [];
   let groups = state.data.groups.filter(g=>!state.hidden.has(g.id));
-  if(state.activeKeyword) groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
+  // 국내 탭에서만 키워드 필터 적용
+  if(currentTab==='kr' && state.activeKeyword)
+    groups=groups.filter(g=>g.lead.keyword===state.activeKeyword);
   const vf=state.viewFilter;
   if(vf==='unread')    groups=groups.filter(g=>!state.read[g.id]);
   else if(vf==='read') groups=groups.filter(g=>!!state.read[g.id]);
