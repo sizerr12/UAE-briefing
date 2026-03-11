@@ -1269,7 +1269,6 @@ function renderIntlSources() {
   const clearBtn = document.getElementById('intlSourceClear');
   if (!el || currentTab !== 'intl' || !state.data) return;
 
-  // 언론사별 카운트 집계
   const counts = {};
   const displayNames = {};
   state.data.groups.forEach(g => {
@@ -1278,18 +1277,29 @@ function renderIntlSources() {
     displayNames[src] = g.lead.sourceDisplay || src;
   });
 
-  const sources = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const sources = Object.entries(counts).sort((a,b) => b[1]-a[1]);
   if (clearBtn) clearBtn.style.display = state.activeIntlSource ? '' : 'none';
 
-  el.innerHTML = sources.map(([src, cnt]) => `
-    <div class="intl-src-item ${state.activeIntlSource===src?'active':''}" onclick="setIntlSource('${src}')">
+  el.innerHTML = sources.map(([src, cnt]) => {
+    const active = state.activeIntlSource === src ? 'active' : '';
+    const dispName = (displayNames[src]||src).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div class="intl-src-item ${active}" data-src="${src.replace(/"/g,'&quot;')}">
       <div class="intl-src-left">
         <img src="https://www.google.com/s2/favicons?sz=16&domain=${src}"
           style="width:14px;height:14px;border-radius:2px" onerror="this.style.display='none'" alt="">
-        <span>${displayNames[src]}</span>
+        <span>${dispName}</span>
       </div>
       <span class="intl-src-count">${cnt}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+
+  // 이벤트 위임 — 매번 다시 등록
+  el.onclick = function(e) {
+    const item = e.target.closest('.intl-src-item');
+    if (!item) return;
+    const src = item.dataset.src;
+    setIntlSource(state.activeIntlSource === src ? null : src);
+  };
 }
 
 function setIntlSource(src) {
@@ -1499,7 +1509,10 @@ async function summarizeArticle(gid, url, e) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, title, description })
       });
-      const data = await res.json();
+      const rawText = await res.text();
+      let data;
+      try { data = JSON.parse(rawText); }
+      catch(e) { throw new Error(`[${res.status}] ${rawText.slice(0,120)}`); }
       if (!res.ok || data.error) throw new Error(`[${res.status}] ${data.error || '서버 오류'}`);
       lines = data.summary || [];
     }
