@@ -8,8 +8,7 @@ function callGemini(prompt, apiKey) {
       generationConfig: { maxOutputTokens: 400, temperature: 0.2 }
     });
 
-    // gemini-1.5-flash — 무료 tier에서 가장 안정적
-    const path = `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const path = `/v1beta/models/gemini-2.0-flash-001:generateContent?key=${apiKey}`;
 
     const req = https.request({
       hostname: 'generativelanguage.googleapis.com',
