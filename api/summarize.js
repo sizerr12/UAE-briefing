@@ -28,8 +28,7 @@ function fetchArticleText(url) {
             .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
             .replace(/&quot;/g, '"')
-            .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FFFF}]/gu, '')  // 이모지/특수문자 제거
-            .replace(/[\uFFFD\uFFFE\uFFFF]/g, '')  // 깨진 문자 제거
+            .replace(/[\uFFFD]/g, '')  // 깨진 문자 제거
             .replace(/\s+/g, ' ')
             .trim().slice(0, 3000);
           resolve(text);
