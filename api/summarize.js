@@ -8,7 +8,8 @@ function callGemini(prompt, apiKey) {
       generationConfig: { maxOutputTokens: 400, temperature: 0.2 }
     });
 
-    const path = `/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+    // v1 endpoint 사용 (v1beta보다 안정적)
+    const path = `/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const req = https.request({
       hostname: 'generativelanguage.googleapis.com',
