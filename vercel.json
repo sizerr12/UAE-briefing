@@ -1,9 +1,9 @@
 {
   "version": 2,
   "functions": {
-    "api/news.js": {
-      "maxDuration": 30
-    }
+    "api/news.js":      { "maxDuration": 30 },
+    "api/intl.js":      { "maxDuration": 30 },
+    "api/summarize.js": { "maxDuration": 30 }
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
