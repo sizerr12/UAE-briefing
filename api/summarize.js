@@ -1,5 +1,53 @@
-// api/summarize.js — Claude Haiku 한국어 3줄 요약
+// api/summarize.js — Claude Haiku 한국어 3줄 요약 (기사 본문 크롤링 포함)
 const https = require('https');
+const http = require('http');
+
+// 기사 URL에서 본문 텍스트 추출
+function fetchArticleText(url) {
+  return new Promise((resolve) => {
+    try {
+      const mod = url.startsWith('https') ? https : http;
+      const req = mod.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)',
+          'Accept': 'text/html'
+        },
+        timeout: 8000
+      }, res => {
+        // 리다이렉트 처리
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          return fetchArticleText(res.headers.location).then(resolve).catch(() => resolve(''));
+        }
+        let html = '';
+        res.on('data', c => { if (html.length < 200000) html += c; });
+        res.on('end', () => {
+          // 스크립트/스타일 제거
+          html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+          html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
+          // article/main 태그 우선 추출
+          const articleMatch = html.match(/<article[\s\S]*?<\/article>/i) ||
+                               html.match(/<main[\s\S]*?<\/main>/i);
+          const target = articleMatch ? articleMatch[0] : html;
+          // HTML 태그 제거
+          const text = target.replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 3000);
+          resolve(text);
+        });
+      });
+      req.on('error', () => resolve(''));
+      req.on('timeout', () => { req.destroy(); resolve(''); });
+    } catch(e) {
+      resolve('');
+    }
+  });
+}
 
 function callClaude(prompt, apiKey) {
   return new Promise((resolve, reject) => {
@@ -56,9 +104,16 @@ module.exports = async function handler(req, res) {
   try { payload = JSON.parse(body); }
   catch(e) { return res.status(400).json({ error: 'invalid json' }); }
 
-  const { title = '', description = '' } = payload;
+  const { title = '', description = '', url = '' } = payload;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
+
+  // description이 짧으면 기사 본문 크롤링 시도
+  let content = description;
+  if (content.length < 200 && url) {
+    const crawled = await fetchArticleText(url);
+    if (crawled.length > 200) content = crawled;
+  }
 
   const prompt = `다음 UAE 영문 뉴스 기사를 한국어로 3줄 요약해주세요.
 핵심 사실만 간결하게, 숫자/금액/고유명사는 영문 그대로 쓰세요.
@@ -68,7 +123,7 @@ module.exports = async function handler(req, res) {
 3. 세번째 핵심
 
 제목: ${title}
-내용: ${description}`;
+내용: ${content || title}`;
 
   try {
     const raw = await callClaude(prompt, apiKey);
