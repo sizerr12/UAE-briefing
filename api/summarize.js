@@ -1,8 +1,7 @@
-// api/summarize.js — Claude Haiku 한국어 3줄 요약 (기사 본문 크롤링 포함)
+// api/summarize.js — Claude Haiku 한국어 3줄 요약 (크롤링 + 제목 폴백)
 const https = require('https');
 const http = require('http');
 
-// 기사 URL에서 본문 텍스트 추출
 function fetchArticleText(url) {
   return new Promise((resolve) => {
     try {
@@ -14,38 +13,28 @@ function fetchArticleText(url) {
         },
         timeout: 8000
       }, res => {
-        // 리다이렉트 처리
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           return fetchArticleText(res.headers.location).then(resolve).catch(() => resolve(''));
         }
         let html = '';
         res.on('data', c => { if (html.length < 200000) html += c; });
         res.on('end', () => {
-          // 스크립트/스타일 제거
           html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
           html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
-          // article/main 태그 우선 추출
           const articleMatch = html.match(/<article[\s\S]*?<\/article>/i) ||
                                html.match(/<main[\s\S]*?<\/main>/i);
           const target = articleMatch ? articleMatch[0] : html;
-          // HTML 태그 제거
           const text = target.replace(/<[^>]+>/g, ' ')
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .slice(0, 3000);
+            .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"').replace(/\s+/g, ' ')
+            .trim().slice(0, 3000);
           resolve(text);
         });
       });
       req.on('error', () => resolve(''));
       req.on('timeout', () => { req.destroy(); resolve(''); });
-    } catch(e) {
-      resolve('');
-    }
+    } catch(e) { resolve(''); }
   });
 }
 
@@ -56,7 +45,6 @@ function callClaude(prompt, apiKey) {
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }]
     });
-
     const req = https.request({
       hostname: 'api.anthropic.com',
       path: '/v1/messages',
@@ -78,9 +66,7 @@ function callClaude(prompt, apiKey) {
           const text = j.content?.[0]?.text || '';
           if (!text) return reject(new Error(`Claude empty. Raw: ${data.slice(0,200)}`));
           resolve(text);
-        } catch(e) {
-          reject(new Error(`Parse error: ${data.slice(0,200)}`));
-        }
+        } catch(e) { reject(new Error(`Parse error: ${data.slice(0,200)}`)); }
       });
     });
     req.on('error', reject);
@@ -108,37 +94,38 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
 
-  // description이 짧으면 기사 본문 크롤링 시도
+  // description 짧으면 크롤링 시도
   let content = description;
   if (content.length < 200 && url) {
     const crawled = await fetchArticleText(url);
     if (crawled.length > 200) content = crawled;
   }
 
-  const prompt = `다음 UAE 영문 뉴스 기사를 한국어로 3줄 요약해주세요.
-핵심 사실만 간결하게, 숫자/금액/고유명사는 영문 그대로 쓰세요.
-반드시 아래 형식으로만 답하세요 (다른 말 없이):
-1. 첫번째 핵심
-2. 두번째 핵심
-3. 세번째 핵심
+  // 본문 유무에 따라 프롬프트 분기
+  const hasContent = content.length > 100;
+  const prompt = hasContent
+    ? `다음 UAE 영문 뉴스 기사를 한국어로 요약해주세요.
+핵심 내용을 자연스럽게 2~4문장으로 설명해주세요. 숫자/금액/고유명사는 영문 그대로 쓰세요.
+다른 말 없이 요약문만 바로 써주세요.
 
 제목: ${title}
-내용: ${content || title}`;
+내용: ${content}`
+    : `다음 UAE 뉴스 기사 제목을 한국어로 한 문장으로 설명해주세요.
+제목에서 알 수 있는 핵심만, 숫자/금액/고유명사는 영문 그대로 쓰세요.
+다른 말 없이 설명문만 바로 써주세요.
+
+제목: ${title}`;
 
   try {
     const raw = await callClaude(prompt, apiKey);
-
-    const lines = raw.split('\n')
-      .map(l => l.trim())
-      .filter(l => /^[1-3][\.\)]/.test(l))
-      .map(l => l.replace(/^[1-3][\.\)]\s*/, ''));
+    // 본문 있으면 문단, 없으면 한 문장 — 그대로 표시
+    const lines = raw.trim().split('\n').map(l => l.trim()).filter(l => l.length > 5);
 
     if (!lines.length) {
       const fallback = raw.split('\n').map(l=>l.trim()).filter(l=>l.length>10).slice(0,3);
       if (fallback.length) return res.status(200).json({ summary: fallback, raw });
       return res.status(500).json({ error: `파싱 실패: ${raw.slice(0,100)}` });
     }
-
     return res.status(200).json({ summary: lines, raw });
   } catch(err) {
     return res.status(500).json({ error: err.message });
