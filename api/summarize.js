@@ -27,7 +27,9 @@ function fetchArticleText(url) {
           const text = target.replace(/<[^>]+>/g, ' ')
             .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"').replace(/\s+/g, ' ')
+            .replace(/&quot;/g, '"')
+            .replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27FF]/gu, '')  // 이모지 제거
+            .replace(/\s+/g, ' ')
             .trim().slice(0, 3000);
           resolve(text);
         });
@@ -119,7 +121,9 @@ module.exports = async function handler(req, res) {
   try {
     const raw = await callClaude(prompt, apiKey);
     // 본문 있으면 문단, 없으면 한 문장 — 그대로 표시
-    const lines = raw.trim().split('\n').map(l => l.trim()).filter(l => l.length > 5);
+    const lines = raw.trim().split('\n')
+      .map(l => l.trim().replace(/^\d+\.\s*/, ''))  // "1. " 제거
+      .filter(l => l.length > 5);
 
     if (!lines.length) {
       const fallback = raw.split('\n').map(l=>l.trim()).filter(l=>l.length>10).slice(0,3);
