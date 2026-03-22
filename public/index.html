@@ -652,6 +652,7 @@ const db   = firebase.firestore();
 const ALLOWED_EMAILS = [
   'yoyohwan@gmail.com',
   'elisewithjc@gmail.com',
+  'intohole7@gmail.com',
 ];
 
 let currentUser = null;
@@ -754,6 +755,40 @@ async function saveToCloud() {
     console.warn('saveToCloud:', e);
     savePersist();
   }
+}
+
+// ════════════════════════════════════════
+// Firestore: 기사 누적 저장/로드
+// ════════════════════════════════════════
+async function saveArticlesToCloud(newGroups) {
+  if (!currentUser || !newGroups || !newGroups.length) return;
+  try {
+    const ref = db.collection('articleCache').doc(currentUser.uid);
+    const snap = await ref.get();
+    let existing = [];
+    if (snap.exists) existing = snap.data().groups || [];
+
+    // 기존 + 새 기사 합치기, 중복 제거 (id 기준)
+    const existingIds = new Set(existing.map(g => g.id));
+    const merged = [...newGroups.filter(g => !existingIds.has(g.id)), ...existing];
+
+    // 좋아요한 기사는 무조건 보존, 나머지는 최대 1000개
+    const liked = new Set(Object.keys(state.likes || {}));
+    const likedGroups = merged.filter(g => liked.has(g.id));
+    const normalGroups = merged.filter(g => !liked.has(g.id)).slice(0, 1000 - likedGroups.length);
+    const final = [...likedGroups, ...normalGroups];
+
+    await ref.set({ groups: final, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  } catch(e) { console.warn('saveArticlesToCloud:', e); }
+}
+
+async function loadArticlesFromCloud() {
+  if (!currentUser) return null;
+  try {
+    const snap = await db.collection('articleCache').doc(currentUser.uid).get();
+    if (snap.exists) return snap.data().groups || [];
+  } catch(e) { console.warn('loadArticlesFromCloud:', e); }
+  return null;
 }
 
 // ════════════════════════════════════════
@@ -933,6 +968,17 @@ async function loadNews() {
       const res=await fetch(`${API_BASE}?${p}`);
       if(!res.ok) throw new Error();
       data=await res.json();
+
+      // 새 기사 누적 저장
+      if (data.groups && data.groups.length) saveArticlesToCloud(data.groups);
+
+      // 캐시 기사 합치기
+      const cached = await loadArticlesFromCloud();
+      if (cached && cached.length) {
+        const newIds = new Set((data.groups||[]).map(g=>g.id));
+        const oldGroups = cached.filter(g => !newIds.has(g.id));
+        data = { ...data, groups: [...(data.groups||[]), ...oldGroups] };
+      }
     }
     state.data=data;
     const d=new Date(data.fetchedAt);
@@ -980,6 +1026,19 @@ async function loadIntlNews() {
       // API는 성공했지만 기사가 0개면 DEMO fallback
       if(!data.groups || data.groups.length===0) data=DEMO_INTL;
     }
+    // 새 기사 Firestore에 누적 저장
+    if (!DEMO_MODE && data.groups && data.groups.length) {
+      saveArticlesToCloud(data.groups);
+    }
+
+    // 캐시된 기사 불러와서 합치기
+    const cached = await loadArticlesFromCloud();
+    if (cached && cached.length) {
+      const newIds = new Set((data.groups||[]).map(g=>g.id));
+      const oldGroups = cached.filter(g => !newIds.has(g.id));
+      data = { ...data, groups: [...(data.groups||[]), ...oldGroups] };
+    }
+
     state.data=data;
     const d=new Date(data.fetchedAt);
     if(!isNaN(d))
@@ -987,7 +1046,13 @@ async function loadIntlNews() {
         `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} 업데이트`;
   } catch(e){
     console.error('loadIntlNews error:', e);
-    state.data=DEMO_INTL;
+    // 에러 시 캐시 로드 시도
+    const cached = await loadArticlesFromCloud();
+    if (cached && cached.length) {
+      state.data = { groups: cached, fetchedAt: new Date().toISOString() };
+    } else {
+      state.data=DEMO_INTL;
+    }
   }
   render();
 }
